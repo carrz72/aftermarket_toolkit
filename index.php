@@ -1,0 +1,352 @@
+<?php
+require_once __DIR__ . '../config/db.php';
+
+$search = $_GET['search'] ?? '';
+$category = $_GET['category'] ?? '';
+
+$sql = "
+  SELECT listings.*, users.username, users.profile_picture 
+  FROM listings 
+  JOIN users ON listings.user_id = users.id 
+  WHERE 1=1
+";
+
+$params = [];
+
+if (!empty($search)) {
+    $sql .= " AND (listings.title LIKE ? OR listings.description LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+}
+
+if (!empty($category)) {
+    $sql .= " AND listings.category = ?";
+    $params[] = $category;
+}
+
+$sql .= " ORDER BY listings.created_at DESC LIMIT 20";
+
+$stmt = $conn->prepare($sql);
+
+if (!empty($params)) {
+    $types = str_repeat('s', count($params));
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aftermarket Toolbox</title>
+  <link rel="stylesheet" href="./public/assets/css/index.css">
+</head>
+<body>
+
+<div class="menu">
+  <a href="#" class="link">
+    <span class="link-icon">
+      <img src="./public/assets/images/home-icon.svg" alt="">
+    </span>
+    <span class="link-title">Home</span>
+  </a>
+
+  <a href="#" class="link">
+    <span class="link-icon">
+      <img src="./public/assets/images/market.svg" alt="">
+    </span>
+    <span class="link-title">Market</span>
+  </a>
+
+  <a href="#" class="link">
+    <span class="link-icon">
+      <img src="./public/assets/images/chat-icon.svg" alt="">
+    </span>
+    <span class="link-title">Chat</span>
+  </a>
+  
+  <a href="#" class="link">
+    <span class="link-icon">
+      <img src="./public/assets/images/forum-icon.svg" alt="">
+    </span>
+    <span class="link-title">Forum</span>
+  </a>
+  
+  <div class="profile-container">
+    <a href="#" class="link" onclick="toggleProfileDropdown(event)">
+      <span class="link-icon">
+        <img src="./public/assets/images/profile-icon.svg" alt="">
+      </span>
+      <span class="link-title">Profile</span>
+    </a>
+    <div id="profileDropdown" class="dropdown-content">
+    <?php if (isset($_SESSION['user_id'])): ?>
+      <button class="value"><img src="./public/assets/images/profile-icon.svg" alt="">Account</button>
+      <button class="value">Appearance</button>
+      <button class="value">Accessibility</button>
+      <?php else: ?>
+        <button class="value">Login</button>
+        <button class="value">Register</button>
+        <?php endif; ?>
+    </div>
+  </div>
+</div>
+
+<div class="sidebar">
+  <h2>Sidebar</h2>
+  <ul>
+    <li><a href="#">Sidebar Link 1</a></li>
+    <li><a href="#">Sidebar Link 2</a></li>
+    <li><a href="#">Sidebar Link 3</a></li>
+  </ul>
+</div>
+
+<main class="main-content">
+  <div class="inputBox_container">
+    <svg class="search_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" alt="search icon">
+      <path d="M46.599 46.599a4.498 4.498 0 0 1-6.363 0l-7.941-7.941C29.028 40.749 25.167 42 21 42 9.402 42 0 32.598 0 21S9.402 0 21 0s21 9.402 21 21c0 4.167-1.251 8.028-3.342 11.295l7.941 7.941a4.498 4.498 0 0 1 0 6.363zM21 6C12.717 6 6 12.714 6 21s6.717 15 15 15c8.286 0 15-6.714 15-15S29.286 6 21 6z"></path>
+    </svg>
+    <input class="inputBox" id="inputBox" type="text" placeholder="Search For Products">
+  </div>
+
+<div class="marketplace">
+
+<h1>Aftermarket toolkit marketpalace</h1>
+<div class="card-container">
+
+<?php while ($row = $result->fetch_assoc()): ?>
+  <div class="card">
+    <div class="imge">
+      <div class="Usericon">
+        <img 
+          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
+        >   
+      </div>
+      <div class="Description">
+        <h3 class="dtitle"><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></h3>
+        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
+      </div>
+    </div>
+    <div class="image">
+    <?php $img = !empty($row['image']) ? $row['image'] : './public/assets/images/default-image.jpg'; ?>
+    <img src="<?= htmlspecialchars($img, ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
+    </div>
+    <div class="details">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <p class="Location">Location</p>
+    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
+    </div>
+  </div>
+<?php endwhile; ?>
+
+  <?php while ($row = $result->fetch_assoc()): ?>
+  <div class="card">
+    <div class="imge">
+      <div class="Usericon">
+        <img 
+          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
+        >   
+      </div>
+      <div class="Description">
+        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
+      </div>
+    </div>
+    <div class="image">
+      <img src="<?= htmlspecialchars($row['image'] ?: './public/assets/images/default_image.jpg', ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
+    </div>
+    <div class="details">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <p class="Location">Location</p>
+    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
+    </div>
+  </div>
+<?php endwhile; ?>
+
+
+<?php while ($row = $result->fetch_assoc()): ?>
+  <div class="card">
+    <div class="imge">
+      <div class="Usericon">
+        <img 
+          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
+        >   
+      </div>
+      <div class="Description">
+        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
+      </div>
+    </div>
+    <div class="image">
+      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
+    </div>
+    <div class="details">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <p class="Location">Location</p>
+    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
+    </div>
+  </div>
+<?php endwhile; ?>
+
+
+<?php while ($row = $result->fetch_assoc()): ?>
+  <div class="card">
+    <div class="imge">
+      <div class="Usericon">
+        <img 
+          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
+        >   
+      </div>
+      <div class="Description">
+        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
+      </div>
+    </div>
+    <div class="image">
+      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
+    </div>
+    <div class="details">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <p class="Location">Location</p>
+    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
+    </div>
+  </div>
+<?php endwhile; ?>
+
+<?php while ($row = $result->fetch_assoc()): ?>
+  <div class="card">
+    <div class="imge">
+      <div class="Usericon">
+        <img 
+          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
+        >   
+      </div>
+      <div class="Description">
+        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
+      </div>
+    </div>
+    <div class="image">
+      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
+    </div>
+    <div class="details">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <p class="Location">Location</p>
+    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
+    </div>
+  </div>
+<?php endwhile; ?>
+
+<?php while ($row = $result->fetch_assoc()): ?>
+  <div class="card">
+    <div class="imge">
+      <div class="Usericon">
+        <img 
+          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
+        >   
+      </div>
+      <div class="Description">
+        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
+        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
+      </div>
+    </div>
+    <div class="image">
+      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
+    </div>
+    <div class="details">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <p class="Location">Location</p>
+    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
+    </div>
+  </div>
+<?php endwhile; ?>
+</div>
+
+</div>
+
+<div class="forum">
+  <div class="forum-container">
+    <h2>Community Forum</h2>
+    <section class="forum-section">
+      <div class="container">
+
+        <!-- Forum Threads -->
+<div class="forum-threads">
+  <?php
+    require_once __DIR__ . '/config/db.php';
+
+    $sql = "
+      SELECT forum_threads.*, users.username, users.profile_picture AS profile_pic 
+      FROM forum_threads 
+      JOIN users ON forum_threads.user_id = users.id 
+      ORDER BY forum_threads.created_at DESC 
+      LIMIT 10
+    ";
+    $result = $conn->query($sql);
+
+    if ($result && $result->num_rows > 0):
+      while ($row = $result->fetch_assoc()):
+  ?>
+  <div class="forumcard">
+    <div class="card-body">
+      <img 
+        src="<?= htmlspecialchars($row['profile_pic']) ?>" 
+        alt="<?= htmlspecialchars($row['username']) ?>" 
+        class="profile-pic" 
+       >
+      <div>
+        <h5 class="card-title "><?= htmlspecialchars($row['title']) ?></h5>
+        <p class="card-text">
+          By <?= htmlspecialchars($row['username']) ?> | <?= date('M j, Y', strtotime($row['created_at'])) ?>
+        </p>
+        <p class="card-text"><?= nl2br(htmlspecialchars($row['body'])) ?></p>
+      </div>
+    </div>
+  </div>
+  <?php 
+      endwhile;
+    else:
+      echo "<p>No forum posts yet. Be the first to ask a question!</p>";
+    endif;
+  ?>
+</div>
+      </div>
+    </section>
+  </div>
+</div>
+</div>
+<script>
+  function toggleProfileDropdown(event) {
+    event.preventDefault();
+    const profileContainer = document.querySelector('.profile-container');
+    profileContainer.classList.toggle('active');
+  }
+
+  // Remove active state if click is outside the profile container
+  document.addEventListener('click', function(e) {
+    const profileContainer = document.querySelector('.profile-container');
+    if (!profileContainer.contains(e.target)) {
+      profileContainer.classList.remove('active');
+    }
+  });
+
+  // Remove active state when the window loses focus (click off to another page)
+  window.addEventListener('blur', function() {
+    const profileContainer = document.querySelector('.profile-container');
+    profileContainer.classList.remove('active');
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
