@@ -279,8 +279,7 @@ $result = $stmt->get_result();
     <h2>Community Forum</h2>
     <section class="forum-section">
       <div class="container">
-
-        <!-- Forum Threads -->
+<!-- Existing forum thread loop -->
 <div class="forum-threads">
   <?php
     require_once __DIR__ . '/config/db.php';
@@ -296,21 +295,62 @@ $result = $stmt->get_result();
 
     if ($result && $result->num_rows > 0):
       while ($row = $result->fetch_assoc()):
+        // Store the current thread ID
+        $thread_id = $row['id'];
   ?>
   <div class="forumcard">
     <div class="card-body">
-      <img 
-        src="<?= htmlspecialchars($row['profile_pic']) ?>" 
-        alt="<?= htmlspecialchars($row['username']) ?>" 
-        class="profile-pic" 
-       >
-      <div>
-        <h5 class="card-title "><?= htmlspecialchars($row['title']) ?></h5>
-        <p class="card-text">
-          By <?= htmlspecialchars($row['username']) ?> | <?= date('M j, Y', strtotime($row['created_at'])) ?>
-        </p>
+      <div class="forum-profile">
+        <img 
+          src="<?= htmlspecialchars($row['profile_pic']) ?>" 
+          alt="<?= htmlspecialchars($row['username']) ?>" 
+          class="profile-pic" 
+        >
+        <?= htmlspecialchars($row['username']) ?> | <?= date('M j, Y', strtotime($row['created_at'])) ?>
+      </div>
+      <div class="forum-content">
+        <h5 class="card-title"><?= htmlspecialchars($row['title']) ?></h5>
+        <div class="user-info"></div>
         <p class="card-text"><?= nl2br(htmlspecialchars($row['body'])) ?></p>
       </div>
+      
+      <!-- Fetch and display responses for this forum thread -->
+      <div class="forum-responses">
+      <?php
+// Prepare a query to get all responses for the current thread
+$sql_res = "
+  SELECT responses.*, users.username, users.profile_picture AS response_profile_pic 
+  FROM forum_replies AS responses 
+  JOIN users ON responses.user_id = users.id 
+  WHERE responses.thread_id = ? 
+  ORDER BY responses.created_at ASC
+";
+if ($stmt = $conn->prepare($sql_res)) {
+  $stmt->bind_param("i", $thread_id);
+  $stmt->execute();
+  $res_result = $stmt->get_result();
+
+  if ($res_result && $res_result->num_rows > 0):
+    while ($response = $res_result->fetch_assoc()):
+?>
+<div class="forum-response">
+  <img src="<?= htmlspecialchars($response['response_profile_pic']) ?>" 
+       alt="<?= htmlspecialchars($response['username']) ?>" 
+       class="response-profile-pic" 
+       width="30" height="30">
+  <span class="response-username"><?= htmlspecialchars($response['username']) ?></span>
+  <p class="response-body"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
+</div>
+<?php 
+    endwhile;
+  else:
+    echo "<p class='no-responses'>No responses yet.</p>";
+  endif;
+  $stmt->close();
+}
+        ?>
+      </div>
+      <!-- End responses -->
     </div>
   </div>
   <?php 
