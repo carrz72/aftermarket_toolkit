@@ -1,0 +1,251 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-image: url("../images/marketplace_bg5.jpg");
+    background-position: center;
+    background-size: cover;
+  }
+  
+
+  /* ========================================================================
+     Navbar & Menu Styles
+  ======================================================================== */
+  .menu {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 0.5rem;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.075);
+    margin: 15px 8px;
+  }
+  
+  .link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 50px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: width 0.2s ease-in;
+  }
+  
+  .link:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #cacaca;
+    border-radius: 8px;
+    transform: translateX(100%);
+    transition: transform 0.2s ease-in;
+    z-index: -1;
+  }
+  
+  .link:hover,
+  .link:focus {
+    width: 130px;
+    outline: none;
+  }
+  
+  .link:hover:before,
+  .link:focus:before {
+    transform: translateX(0);
+  }
+  
+  .link-icon {
+    position: absolute;
+    left: 18px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .link-icon img,
+  .link-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .link-title {
+    display: block;
+    text-align: center;
+    text-indent: 28px;
+    width: 100%;
+    transform: translateX(100%);
+    transition: transform 0.2s ease-in, opacity 0.2s ease-in;
+    opacity: 0;
+  }
+  
+  .link:hover .link-title,
+  .link:focus .link-title {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  
+  /* ========================================================================
+     Profile Container & Dropdown
+  ======================================================================== */
+  .profile-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .profile-container .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #a8a8a8;
+    border-radius: 5px;
+    box-shadow: 0 -3px 2px 0 #000;
+    margin-top: 5px;
+    padding: 5px;
+    z-index: 10;
+  }
+  
+  .profile-container.active .dropdown-content,
+  .profile-container:hover .dropdown-content {
+    display: block;
+  }
+  
+
+  .market-header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+  }
+  
+  .search-filter {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  .search-filter input,
+  .search-filter select,
+  .search-filter button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+  
+  .search-filter button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .search-filter button:hover {
+    background-color: #0056b3;
+  }
+  
+  .card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  
+  .card {
+    background: #cacaca;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: #cacaca;
+  }
+  
+  .user-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+  }
+  
+  .username {
+    font-weight: bold;
+  }
+  
+  .listing-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-body h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+  }
+  
+  .description {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    color: #555;
+  }
+  
+  .price {
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  
+  .card-footer {
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .bookmark {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .bookmark img {
+    width: 24px;
+    height: 24px;
+    filter: grayscale(100%);
+    transition: filter 0.3s;
+  }
+  
+  .bookmark:hover img {
+    filter: grayscale(0%);
+  }
+  
+  /* Responsive Improvements */
+  @media (max-width: 768px) {
+ 
+  
+    .search-filter {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  

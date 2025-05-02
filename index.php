@@ -55,26 +55,29 @@ $result = $stmt->get_result();
     <span class="link-title">Home</span>
   </a>
 
-  <a href="#" class="link">
+  <a href="./public/marketplace.php" class="link">
     <span class="link-icon">
       <img src="./public/assets/images/market.svg" alt="">
     </span>
     <span class="link-title">Market</span>
   </a>
-
-  <a href="#" class="link">
-    <span class="link-icon">
-      <img src="./public/assets/images/chat-icon.svg" alt="">
-    </span>
-    <span class="link-title">Chat</span>
-  </a>
   
-  <a href="#" class="link">
+  <a href="./public/forum.php" class="link">
     <span class="link-icon">
       <img src="./public/assets/images/forum-icon.svg" alt="">
     </span>
     <span class="link-title">Forum</span>
   </a>
+
+  
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <a href="#" class="link">
+      <span class="link-icon">
+        <img src="./public/assets/images/chat-icon.svg" alt="">
+      </span>
+      <span class="link-title">Chat</span>
+    </a>
+  <?php endif; ?>
   
   <div class="profile-container">
     <a href="#" class="link" onclick="toggleProfileDropdown(event)">
@@ -306,7 +309,10 @@ $result = $stmt->get_result();
           alt="<?= htmlspecialchars($row['username']) ?>" 
           class="profile-pic" 
         >
-        <?= htmlspecialchars($row['username']) ?> | <?= date('M j, Y', strtotime($row['created_at'])) ?>
+        <div class="pro-details">
+        <?= htmlspecialchars($row['username']) ?><br>
+        <?= date('M j, Y', strtotime($row['created_at'])) ?>
+        </div>
       </div>
       <div class="forum-content">
         <h5 class="card-title"><?= htmlspecialchars($row['title']) ?></h5>
