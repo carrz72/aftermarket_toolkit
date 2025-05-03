@@ -119,161 +119,31 @@ $result = $stmt->get_result();
 <div class="marketplace">
 
 <h1>Aftermarket toolkit marketpalace</h1>
-<div class="card-container">
 
-<?php while ($row = $result->fetch_assoc()): ?>
-  <div class="card">
-    <div class="imge">
-      <div class="Usericon">
-        <img 
-          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
-        >   
-      </div>
-      <div class="Description">
-        <h3 class="dtitle"><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></h3>
-        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
-      </div>
-    </div>
-    <div class="image">
-    <?php $img = !empty($row['image']) ? $row['image'] : './public/assets/images/default-image.jpg'; ?>
-    <img src="<?= htmlspecialchars($img, ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
-    </div>
-    <div class="details">
-    <p class="price">£<?= number_format($row['price'], 2) ?></p>
-    <p class="Location">Location</p>
-    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
-    </div>
+  <!-- Listings -->
+  <div class="card-container">
+    <?php if ($result && $result->num_rows > 0): ?>
+      <?php while ($row = $result->fetch_assoc()): ?>
+        <div class="card">
+          <div class="card-header">
+            <img class="user-pic" src="<?= htmlspecialchars($row['profile_picture'] ?: './assets/images/default-user.jpg') ?>" alt="User" />
+            <span class="username"><?= htmlspecialchars($row['username']) ?></span>
+          </div>
+          <img class="listing-img" src="<?= htmlspecialchars($row['image'] ?: './assets/images/default-image.jpg') ?>" alt="<?= htmlspecialchars($row['title']) ?>" />
+          <div class="card-body">
+            <h3><?= htmlspecialchars($row['title']) ?></h3>
+            <p class="description"><?= htmlspecialchars($row['description']) ?></p>
+            <p class="price">£<?= number_format($row['price'], 2) ?></p>
+          </div>
+          <div class="card-footer">
+            <button class="bookmark"><img src="./public/assets/images/bookmark.svg" alt="Bookmark" /></button>
+          </div>
+        </div>
+      <?php endwhile; ?>
+    <?php else: ?>
+      <p>No listings found.</p>
+    <?php endif; ?>
   </div>
-<?php endwhile; ?>
-
-  <?php while ($row = $result->fetch_assoc()): ?>
-  <div class="card">
-    <div class="imge">
-      <div class="Usericon">
-        <img 
-          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
-        >   
-      </div>
-      <div class="Description">
-        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
-      </div>
-    </div>
-    <div class="image">
-      <img src="<?= htmlspecialchars($row['image'] ?: './public/assets/images/default_image.jpg', ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
-    </div>
-    <div class="details">
-    <p class="price">£<?= number_format($row['price'], 2) ?></p>
-    <p class="Location">Location</p>
-    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
-    </div>
-  </div>
-<?php endwhile; ?>
-
-
-<?php while ($row = $result->fetch_assoc()): ?>
-  <div class="card">
-    <div class="imge">
-      <div class="Usericon">
-        <img 
-          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
-        >   
-      </div>
-      <div class="Description">
-        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
-      </div>
-    </div>
-    <div class="image">
-      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
-    </div>
-    <div class="details">
-    <p class="price">£<?= number_format($row['price'], 2) ?></p>
-    <p class="Location">Location</p>
-    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
-    </div>
-  </div>
-<?php endwhile; ?>
-
-
-<?php while ($row = $result->fetch_assoc()): ?>
-  <div class="card">
-    <div class="imge">
-      <div class="Usericon">
-        <img 
-          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
-        >   
-      </div>
-      <div class="Description">
-        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
-      </div>
-    </div>
-    <div class="image">
-      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
-    </div>
-    <div class="details">
-    <p class="price">£<?= number_format($row['price'], 2) ?></p>
-    <p class="Location">Location</p>
-    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
-    </div>
-  </div>
-<?php endwhile; ?>
-
-<?php while ($row = $result->fetch_assoc()): ?>
-  <div class="card">
-    <div class="imge">
-      <div class="Usericon">
-        <img 
-          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
-        >   
-      </div>
-      <div class="Description">
-        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
-      </div>
-    </div>
-    <div class="image">
-      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
-    </div>
-    <div class="details">
-    <p class="price">£<?= number_format($row['price'], 2) ?></p>
-    <p class="Location">Location</p>
-    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
-    </div>
-  </div>
-<?php endwhile; ?>
-
-<?php while ($row = $result->fetch_assoc()): ?>
-  <div class="card">
-    <div class="imge">
-      <div class="Usericon">
-        <img 
-          src="<?= htmlspecialchars($row['profile_picture'] ?: './public/assets/images/default-user.jpg', ENT_QUOTES) ?>" 
-        >   
-      </div>
-      <div class="Description">
-        <p><?= htmlspecialchars($row['title'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['description'], ENT_QUOTES) ?></p>
-        <p><?= htmlspecialchars($row['username'], ENT_QUOTES) ?></p>
-      </div>
-    </div>
-    <div class="image">
-      <img src="<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>">
-    </div>
-    <div class="details">
-    <p class="price">£<?= number_format($row['price'], 2) ?></p>
-    <p class="Location">Location</p>
-    <button> <img src="./public/assets/images/bookmark.svg" alt=""></button>
-    </div>
-  </div>
-<?php endwhile; ?>
-</div>
 
 </div>
 

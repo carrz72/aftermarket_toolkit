@@ -83,7 +83,7 @@ $result = $stmt->get_result();
     <span class="link-title">Home</span>
   </a>
 
-  <a href="#" class="link">
+  <a href="../public/marketplace.php" class="link">
     <span class="link-icon">
       <img src="../public/assets/images/market.svg" alt="">
     </span>
