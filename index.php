@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '../config/db.php';
+session_start();
 
 $search = $_GET['search'] ?? '';
 $category = $_GET['category'] ?? '';
@@ -44,9 +45,31 @@ $result = $stmt->get_result();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aftermarket Toolbox</title>
   <link rel="stylesheet" href="./public/assets/css/index.css">
+  <style>
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .card-link:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-link:hover .card {
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    /* Make sure bookmark button doesn't look like part of the link */
+    .bookmark {
+      position: relative;
+      z-index: 2;
+    }
+  </style>
 </head>
 <body>
-
 <div class="menu">
   <a href="#" class="link">
     <span class="link-icon">
@@ -55,32 +78,39 @@ $result = $stmt->get_result();
     <span class="link-title">Home</span>
   </a>
 
-  <a href="./public/marketplace.php" class="link">
-    <span class="link-icon">
-      <img src="./public/assets/images/market.svg" alt="">
-    </span>
-    <span class="link-title">Market</span>
-  </a>
-  
-  <a href="./public/forum.php" class="link">
-    <span class="link-icon">
-      <img src="./public/assets/images/forum-icon.svg" alt="">
-    </span>
-    <span class="link-title">Forum</span>
-  </a>
-
-  
-  <?php if (isset($_SESSION['user_id'])): ?>
-    <a href="#" class="link">
-      <span class="link-icon">
-        <img src="./public/assets/images/chat-icon.svg" alt="">
-      </span>
-      <span class="link-title">Chat</span>
-    </a>
-  <?php endif; ?>
-  
+  <!-- Market with dropdown like Profile -->
   <div class="profile-container">
-    <a href="#" class="link" onclick="toggleProfileDropdown(event)">
+    <a href="#" class="link" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./public/assets/images/market.svg" alt="">
+      </span>
+      <span class="link-title">Market</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./public/marketplace.php?view=explore';">Explore</button>
+      <button class="value" onclick="window.location.href='./api/listings/view_listings.php';">View Listings</button>
+      <button class="value" onclick="window.location.href='./public/marketplace.php?view=list_item';">List Item</button>
+      <button class="value" onclick="window.location.href='./public/marketplace.php?view=list_item';">Saved Items</button>
+    </div>
+  </div>
+  
+  <!-- Forum with dropdown like Profile -->
+  <div class="profile-container">
+    <a href="#" class="link" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./public/assets/images/forum-icon.svg" alt="">
+      </span>
+      <span class="link-title">Forum</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./public/forum.php?view=threads';">View Threads</button>
+      <button class="value" onclick="window.location.href='./public/forum.php?view=start_thread';">Start Thread</button>
+      <button class="value" onclick="window.location.href='./public/forum.php?view=post_question';">Post Question</button>
+    </div>
+  </div>
+
+  <div class="profile-container">
+    <a href="#" class="link" onclick="toggleDropdown(this, event)">
       <span class="link-icon">
         <img src="./public/assets/images/profile-icon.svg" alt="">
       </span>
@@ -91,15 +121,27 @@ $result = $stmt->get_result();
       <button class="value"><img src="./public/assets/images/profile-icon.svg" alt="">Account</button>
       <button class="value">Appearance</button>
       <button class="value">Accessibility</button>
+      <button class="value" onclick="window.location.href='./public/logout.php';">Logout</button>
       <?php else: ?>
-        <button class="value">Login</button>
-        <button class="value">Register</button>
-        <?php endif; ?>
+        <button class="value" onclick="window.location.href='./public/login.php';">Login</button>
+        <button class="value" onclick="window.location.href='./public/register.php';">Register</button>
+      <?php endif; ?>
     </div>
   </div>
+
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <a href="./public/chat.php" class="link">
+      <span class="link-icon">
+        <img src="./public/assets/images/chat-icon.svg" alt="">
+      </span>
+      <span class="link-title">Chat</span>
+    </a>
+  <?php endif; ?>
 </div>
 
 <div class="sidebar">
+    <!-- Add this button for sidebar toggle -->
+    <button id="sidebarToggle" class="sidebar-toggle">☰</button>
   <h2>Sidebar</h2>
   <ul>
     <li><a href="#">Sidebar Link 1</a></li>
@@ -109,21 +151,77 @@ $result = $stmt->get_result();
 </div>
 
 <main class="main-content">
-  <div class="inputBox_container">
-    <svg class="search_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" alt="search icon">
-      <path d="M46.599 46.599a4.498 4.498 0 0 1-6.363 0l-7.941-7.941C29.028 40.749 25.167 42 21 42 9.402 42 0 32.598 0 21S9.402 0 21 0s21 9.402 21 21c0 4.167-1.251 8.028-3.342 11.295l7.941 7.941a4.498 4.498 0 0 1 0 6.363zM21 6C12.717 6 6 12.714 6 21s6.717 15 15 15c8.286 0 15-6.714 15-15S29.286 6 21 6z"></path>
-    </svg>
-    <input class="inputBox" id="inputBox" type="text" placeholder="Search For Products">
+
+    
+<div class="top-cards">
+<div class="sub-card">
+  <div class="smallIcon">
+    <div class="Name-icon">
+    <div class="Icon">
+    <img src="./public/assets/images/market.svg" alt="Market" />
+    </div>
+    <div class="Name">
+    <h3>Marketplace</h3>
+    </div>
+    </div>
+    <div class="Descripion">
+    <button>View Listings</button>
+            <button>Explore</button>
+            <button onclick="window.location.href='./public/marketplace.php?view=list_item';">List item</button>
+            <button>chart</button>
+    </div>
   </div>
+</div>
+        
+<div class="sub-card">
+<div class="smallIcon">
+    <div class="Name-icon">
+    <div class="Icon">
+    <img src="./public/assets/images/forum-icon.svg" alt="Forum" />
+    </div>
+    <div class="Name">
+    <h3>Forum</h3>
+    </div>
+    </div>
+            <div class="Descripion">  
+            <button>View Threads</button>
+            <button>Start Thread</button>
+            <button>Post Question</button>
+            </div>
+          </div>
+          </div>
+
+          <div class="sub-card">
+          <div class="smallIcon">
+          <div class="Name-icon">
+          <div class="Icon">
+            <img src="./public/assets/images/chat-icon.svg" alt="Chat" />
+          </div>
+          <div class="Name">
+            <h3>Chat</h3>
+          </div>
+          </div>
+            <div class="Descripion">
+            <button>Start Chat</button>
+            <button>View Chats</button>
+            <button>Settings</button>
+            </div>
+            </div>
+          </div>
+
+        </div>
 
 <div class="marketplace">
 
 <h1>Aftermarket toolkit marketpalace</h1>
 
-  <!-- Listings -->
+  <!-- Search and filtering form -->
+  <div class="listing-filters">
+    <form action="index.php" method="GET" class="search-form"></form></div>
   <div class="card-container">
-    <?php if ($result && $result->num_rows > 0): ?>
-      <?php while ($row = $result->fetch_assoc()): ?>
+  <?php if ($result && $result->num_rows > 0): ?>
+    <?php while ($row = $result->fetch_assoc()): ?>
+      <a href="./api/listings/listing.php?id=<?= $row['id'] ?>" class="card-link">
         <div class="card">
           <div class="card-header">
             <img class="user-pic" src="<?= htmlspecialchars($row['profile_picture'] ?: './assets/images/default-user.jpg') ?>" alt="User" />
@@ -136,16 +234,21 @@ $result = $stmt->get_result();
             <p class="price">£<?= number_format($row['price'], 2) ?></p>
           </div>
           <div class="card-footer">
-            <button class="bookmark"><img src="./public/assets/images/bookmark.svg" alt="Bookmark" /></button>
+            <button class="bookmark" onclick="event.stopPropagation(); saveBookmark(<?= $row['id'] ?>); return false;">
+              <img src="./public/assets/images/bookmark.svg" alt="Bookmark" />
+            </button>
           </div>
         </div>
-      <?php endwhile; ?>
-    <?php else: ?>
-      <p>No listings found.</p>
-    <?php endif; ?>
-  </div>
-
+      </a>
+    <?php endwhile; ?>
+  <?php else: ?>
+    <p>No listings found.</p>
+  <?php endif; ?>
 </div>
+<div class="view-all">
+      <button class="view-all-btn">Veiw All</button>  
+  </div>
+  </div>
 
 <div class="forum">
   <div class="forum-container">
@@ -239,30 +342,91 @@ if ($stmt = $conn->prepare($sql_res)) {
       </div>
     </section>
   </div>
+  <div class="view-all">
+      <button class="view-all-btn">Veiw All</button>  
+  </div>
 </div>
+</div>
+</main>
 </div>
 <script>
-  function toggleProfileDropdown(event) {
-    event.preventDefault();
-    const profileContainer = document.querySelector('.profile-container');
-    profileContainer.classList.toggle('active');
-  }
-
-  // Remove active state if click is outside the profile container
+  const delay = 100; // Delay in milliseconds
+  
+  // Sidebar toggle functionality
+  document.getElementById('sidebarToggle').addEventListener('click', function() {
+    const sidebar = document.querySelector('.sidebar');
+    const body = document.body;
+    
+    sidebar.classList.toggle('active');
+    body.classList.toggle('sidebar-active');
+  });
+  
+  // Click outside sidebar to close it (optional)
   document.addEventListener('click', function(e) {
-    const profileContainer = document.querySelector('.profile-container');
-    if (!profileContainer.contains(e.target)) {
-      profileContainer.classList.remove('active');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    
+    if (sidebar.classList.contains('active') && 
+        !sidebar.contains(e.target) && 
+        e.target !== sidebarToggle) {
+      sidebar.classList.remove('active');
+      document.body.classList.remove('sidebar-active');
     }
   });
 
-  // Remove active state when the window loses focus (click off to another page)
-  window.addEventListener('blur', function() {
-    const profileContainer = document.querySelector('.profile-container');
-    profileContainer.classList.remove('active');
+  // Apply event listeners to all profile containers
+  document.querySelectorAll('.profile-container').forEach(container => {
+    let timeoutId = null;
+
+    container.addEventListener('mouseenter', () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      timeoutId = setTimeout(() => {
+        container.classList.add('active');
+      }, delay);
+    });
+
+    container.addEventListener('mouseleave', () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      timeoutId = setTimeout(() => {
+        container.classList.remove('active');
+      }, delay);
+    });
   });
+
+  // Toggle dropdown with a delay
+  function toggleDropdown(element, event) {
+    event.preventDefault();
+    const container = element.closest('.profile-container');
+    setTimeout(() => {
+      container.classList.toggle('active');
+    }, delay);
+  }
+
+  // Close all dropdowns with a delay when clicking outside
+  document.addEventListener('click', function(e) {
+    document.querySelectorAll('.profile-container').forEach(container => {
+      if (!container.contains(e.target)) {
+        setTimeout(() => {
+          container.classList.remove('active');
+        }, delay);
+      }
+    });
+  });
+
+ 
+  function saveBookmark(listingId) {
+
+    console.log("Bookmarked listing: " + listingId);
+    
+  }
+  
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

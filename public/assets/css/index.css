@@ -293,7 +293,7 @@ text-align: center;
 }
 
 .menu-item .dropdown-content {
-  background-color: #a8a8a8;
+  background-color: #ffffff;
   border-radius: 5px;
   box-shadow: 0 -3px 2px 0 #000;
   display: none;
@@ -316,7 +316,7 @@ text-align: center;
 }
 
 .profile-container .dropdown-content {
-  background-color: #a8a8a8;
+  background-color: #ffffff;
   border-radius: 5px;
   box-shadow: 0 -3px 2px 0 #000;
   display: none;
@@ -331,6 +331,7 @@ text-align: center;
 .profile-container.active .dropdown-content,
 .profile-container:hover .dropdown-content {
   display: block;
+    background-color: #ffffff;
 }
 
 .profile-container:hover .link {
@@ -357,17 +358,19 @@ text-align: center;
   position: relative;
   background-color: transparent;
   border-radius: 4px;
+  width: 100%;
+  border-bottom: 1px solid #189dc5;
 }
 
 .value:not(:active):hover,
 .value:focus {
-  background-color: #585858b7;
+  background-color: #189dc5;
   width: 100%;
 }
 
 .value:active,
 .value:focus {
-  background-color: #1A1F24;
+  background-color: #1a1f24a1;
   outline: none;
 }
 
@@ -392,6 +395,11 @@ text-align: center;
   width: 15px;
 }
 
+.value img {
+  width: 15px;
+  height: 15px;
+}
+
 /* ========================================================================
     Card Specific Styles (Listings)
 ======================================================================== */
@@ -409,7 +417,7 @@ text-align: center;
   flex-direction: column;
   gap: 20px;
   justify-content: center;
-  margin-top: 50px;
+  margin-top: 10px;
   padding: 10px;
   width: 100%;
 }
@@ -430,8 +438,9 @@ text-align: center;
 .card-container {
   display: flex;
   flex-wrap: wrap; /* Allow items to wrap to the next line */
-  gap: 20px; /* Space between cards */
-  justify-content: center; /* Align items to the center (optional) */
+  gap: 17px; /* Space between items */
+  justify-content: space-between; /* Align items to the center (optional) */
+  width: 80%;
 }
 
 .card {
@@ -682,6 +691,138 @@ text-align: center;
   margin: 0 auto 0 0;
 }
 
+.top-cards {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 0 auto;
+  padding: 10px;
+  width: 90%;
+border-radius: 10px;
+}
+
+.sub-card {
+  width: fit-content;
+  max-height: 200px;
+  background: #262626;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.smallIcon {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.smallIcon div {
+  background: linear-gradient(120deg, #e5e5e5 30%, #f0f0f0 38%, #f0f0f0 
+  40%, #e5e5e5 48%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  animation: load89234 2s infinite;
+  color: #262626;
+  font-weight: bold;
+}
+
+.Name-icon {
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.Icon {
+  margin: 10px;
+  width: fit-content;
+  height: fit-content;
+}
+
+.Icon img {
+  border-radius: 5px;
+  height: fit-content;
+  image-rendering: auto;
+  margin-right: 5px;
+  object-fit: cover;
+  width: 70px;
+}
+
+.Name {
+  margin: 10px;
+  width: 100px;
+  height: 20px;
+  float: left;
+  transform: translate(0, 25px);
+  border-radius: 5px;
+  text-align: center;
+  align-items: center;
+background-color: black;
+}
+
+.Name h3 {
+  font-size: 17px;
+  font-weight: bold;
+  height: fit-content;
+  justify-items: center;
+  margin: 0 auto;
+  overflow: hidden;
+  color:#189dc5 ;
+}
+
+
+
+.Descripion {
+  margin: 10px;
+  width: 200px;
+  height: fit-content;
+  float: left;
+  transform: translate(0px ,-5px);
+  border-radius: 5px;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.Descripion button {
+  color: rgb(255, 255, 255);
+  cursor: pointer;
+  padding: 2px 5px;
+  width: auto;
+  border-radius: 10px;
+  border: rgb(0, 0, 0) 2px solid;
+  margin: 1px;
+  background-color: #189dc5;
+}
+
+.Descripion button:hover {
+  background-color: #189dc5;
+  transform: translate(0px, -2px);
+  transition: 0.4s;
+  border-radius: 10px;
+  color: rgb(0, 0, 0);
+}
+
+@keyframes load89234 {
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+
+
+
+
+.top-card button:hover {
+  background-color: #189dc5;
+  border: 1px solid rgb(99, 99, 99);
+  border-radius: 10px;
+  color: rgb(0, 0, 0);
+  padding: 10px;
+}
+
+
+
 /* ========================================================================
     Details Styles
 ======================================================================== */
@@ -731,16 +872,61 @@ text-align: center;
 /* ========================================================================
     Sidebar Styles (Desktop)
 ======================================================================== */
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: fixed;
+  left: 0px;
+  top: 320px; /* Position near the top */
+  background-color: white;
+  color: #189dc5;
+  border: none;
+  border-radius: 0px  10px 10px 0px;
+  width: 30px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001; /* Higher than sidebar */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.sidebar-toggle:hover {
+  background-color: #189dc5;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Update sidebar to be toggleable */
 .sidebar {
-  color: #fff;
-  display: none;
-  height: 50vh;
-  margin-top: 250px;
-  overflow-y: auto;
+  color: #fcfcfc;
+  background-color: #ffffff;
+  height: 30vh; /* Keep your 50% height */
+  top: 360px; /* Keep your current top position */
   padding: 20px;
-  position: absolute;
-  top: 0;
+  position: fixed;
+  left: -300px; /* Initially hidden off-screen */
   width: 250px;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: left 0.3s ease; /* Transition for sliding effect */
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
+}
+
+/* When sidebar is active (shown) */
+.sidebar.active {
+  background-color: #157a9e;
+  left: 0; /* Show the sidebar */
+}
+
+
+.main-content {
+  transition: none; /* Remove transition */
+}
+
+/* Remove the margin adjustment for main content when sidebar is active */
+body.sidebar-active .main-content {
+  margin-left: 0; /* Don't push content */
 }
 
 .sidebar h2 {
@@ -771,6 +957,28 @@ text-align: center;
 
 .sidebar a:hover {
   background-color: #495057;
+}
+
+
+.view-all-btn {
+  background-color: #189dc5;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 27px;
+  margin-bottom: 0px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+.view-all-btn:hover {
+  background-color: #696969bd;
 }
 
 /* ========================================================================

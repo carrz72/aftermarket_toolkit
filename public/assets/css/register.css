@@ -1,0 +1,91 @@
+/* Base styles for login page */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    background-image: url("../images/marketplace_bg5.jpg");
+    background-position: center;
+    background-size: cover;
+}
+
+/* Centering the login container */
+.login-container {
+    width: 420px;
+    height: fit-content;
+    margin: 5% auto;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.89);
+    border: 1px solid #dddddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Inputs container styling */
+.inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+/* Styling for input fields */
+.login-container input[type="text"],
+.login-container input[type="password"],
+.login-container input[type="email"] 
+{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Focus state for inputs */
+.login-container input:focus {
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
+/* Login form header */
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
+/* Paragraph styling */
+.login-container p {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555555;
+}
+
+/* Hyperlinks inside paragraphs */
+.login-container p a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+
+/* Submit button styling */
+.login-container button {
+    margin-left: 10px;
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    color: #000000;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Button hover effect */
+.login-container button:hover {
+    background-color: #0056b3;
+    transform: translateX(0.5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

@@ -123,25 +123,9 @@ $result = $stmt->get_result();
       <div class="container">
         <!-- Thread creation form (only for logged in users) -->
         <?php if (isset($_SESSION['user_id'])): ?>
-          <form action="create_thread.php" method="POST" class="mb-4">
-            <div class="mb-3">
-              <input type="text" name="title" class="form-control" placeholder="Thread Title" required>
+            <div class="create-thread-section">
+            <a href="create_forum.php" class="btn btn-primary">Post a Thread</a>
             </div>
-            <div class="mb-3">
-              <textarea name="body" class="form-control" placeholder="Your question or discussion topic..." rows="4" required></textarea>
-            </div>
-            <!-- Add category field to the creation form -->
-            <div class="mb-3">
-              <label for="category">Category:</label>
-              <select name="category" id="category" class="form-control" required>
-                <option value="general">General</option>
-                <option value="announcements">Announcements</option>
-                <option value="questions">Questions</option>
-                <!-- Add more options as needed -->
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Post Thread</button>
-          </form>
         <?php else: ?>
           <p class="login-in">Please <a href="login.php">log in</a> to post a thread.</p>
         <?php endif; ?>
@@ -183,6 +167,20 @@ $result = $stmt->get_result();
                 <h5 class="card-title"><?= htmlspecialchars($row['title']) ?></h5>
                 <div class="user-info"></div>
                 <p class="card-text"><?= nl2br(htmlspecialchars($row['body'])) ?></p>
+
+                <!-- Add Response Button (only for logged-in users) -->
+                <?php if (isset($_SESSION['user_id'])): ?>
+                  <div class="response-section">
+                    <button class="response-btn" onclick="toggleResponseForm('form-<?= $thread_id ?>')">Add Response</button>
+                    
+                    <form id="form-<?= $thread_id ?>" class="response-form" style="display: none;" method="POST" action="add_response.php">
+                      <input type="hidden" name="thread_id" value="<?= $thread_id ?>">
+                      <textarea name="response_body" rows="3" placeholder="Type your response here..." required></textarea>
+                      <button type="submit" class="submit-response">Submit</button>
+                      <button type="button" class="cancel-response" onclick="toggleResponseForm('form-<?= $thread_id ?>')">Cancel</button>
+                    </form>
+                  </div>
+                <?php endif; ?>
               </div>
               
               <!-- Responses for this thread -->
@@ -275,6 +273,15 @@ $result = $stmt->get_result();
   window.addEventListener('blur', function() {
     document.querySelector('.profile-container').classList.remove('active');
   });
+
+  function toggleResponseForm(formId) {
+    const form = document.getElementById(formId);
+    if (form.style.display === "none" || !form.style.display) {
+      form.style.display = "block";
+    } else {
+      form.style.display = "none";
+    }
+  }
 </script>
 </body>
 </html>

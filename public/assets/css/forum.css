@@ -450,6 +450,69 @@ text-align: center;
     margin: 0;
   }
 
+  /* Response button and form styles */
+.response-btn {
+  background-color: #189dc5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 10px auto;
+  display: block;
+  transition: background-color 0.3s;
+}
+
+.response-btn:hover {
+  background-color: #157a9e;
+}
+
+.response-form {
+  background-color: #f8f8f8;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 10px auto;
+  width: 80%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.response-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.submit-response, .cancel-response {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.submit-response {
+  background-color: #28a745;
+  color: white;
+}
+
+.cancel-response {
+  background-color: #dc3545;
+  color: white;
+}
+
+.submit-response:hover {
+  background-color: #218838;
+}
+
+.cancel-response:hover {
+  background-color: #c82333;
+}
+
 
   /* Pagination Styles */
 .pagination {

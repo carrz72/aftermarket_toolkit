@@ -1,0 +1,244 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Menu styles (consistent with marketplace.css) */
+.menu {
+    background-color: white;
+    box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.541);
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    text-align: center;
+    margin: 10px;
+    padding: 0.8rem;
+    position: relative;
+    border-radius: 15px;
+}
+
+.link {
+    color: white;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    transform-origin: center left;
+    transition: width 0.2s ease-in;
+    width: 70px;
+    height: 30px;
+    border-radius: 8px;
+    z-index: 1;
+    padding: 5px;
+}
+
+.link:before {
+    background-color: #189dc5;
+    border-radius: 8px;
+    content: "";
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    transform: translateX(100%);
+    transform-origin: center right;
+    transition: transform 0.2s ease-in;
+    width: 100%;
+    z-index: -1;
+}
+
+.link:hover,
+.link:focus {
+    outline: 0;
+    width: 130px;
+}
+
+.link:hover:before,
+.link:focus:before,
+.link:hover .link-title,
+.link:focus .link-title {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.link-icon {
+    display: block;
+    flex-shrink: 0;
+    height: 48px;
+    left: 18px;
+    position: absolute;
+    width: 28px;
+}
+
+.link-icon img {
+    height: 30px;
+    width: 30px;
+}
+
+.link-title {
+    display: block;
+    text-align: center;
+    font-size: 1.5em;
+    text-indent: 40px;
+    transition: transform 0.2s ease-in;
+    transform: translateX(100%);
+    transform-origin: center right;
+    width: 100%;
+}
+
+/* Create listing container */
+.create-listing-container {
+    max-width: 800px;
+    margin: 30px auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.create-listing-container h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 24px;
+    background-color: #189dc5;
+    padding: 15px;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0px 6px rgb(5, 5, 5);
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #189dc5;
+    outline: none;
+    box-shadow: 0 0 5px rgba(24, 157, 197, 0.3);
+}
+
+.form-group input[type="file"] {
+    border: 1px dashed #ccc;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.image-preview {
+    margin-top: 10px;
+}
+
+/* Buttons */
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.submit-btn, .cancel-btn {
+    padding: 12px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.submit-btn {
+    background-color: #189dc5;
+    color: white;
+    border: none;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.submit-btn:hover {
+    background-color: #157a9e;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background-color: #ccc;
+    color: #333;
+    border: none;
+    flex: 1;
+    margin-left: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+    transform: translateY(-2px);
+}
+
+/* Error and success messages */
+.error-messages {
+    background-color: #ffeaea;
+    border: 1px solid #ffb8b8;
+    color: #d8000c;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.error-messages ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.success-message {
+    background-color: #e7ffe7;
+    border: 1px solid #b8ffb8;
+    color: #00800e;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .create-listing-container {
+        padding: 15px;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+    
+    .submit-btn, .cancel-btn {
+        margin: 5px 0;
+    }
+}
