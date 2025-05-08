@@ -72,6 +72,35 @@ $result = $stmt->get_result();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Community Forum - Aftermarket Toolbox</title>
   <link rel="stylesheet" href="./assets/css/forum.css">
+  <style>
+    /* Delete response button styling */
+    .delete-response-btn {
+      background-color: transparent;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      padding: 2px 4px;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .delete-response-btn:hover {
+      opacity: 1;
+    }
+
+    .forum-response {
+      position: relative;
+    }
+
+    .delete-response-form {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+    }
+  </style>
 </head>
 <body>
 <!-- Navigation / Menu -->
@@ -121,6 +150,21 @@ $result = $stmt->get_result();
     <h2>Community Forum</h2>
     <section class="forum-section">
       <div class="container">
+        <!-- Display success/error messages -->
+        <?php if (isset($_SESSION['success'])): ?>
+          <div class="alert alert-success">
+            <?= htmlspecialchars($_SESSION['success']) ?>
+            <?php unset($_SESSION['success']); ?>
+          </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+          <div class="alert alert-danger">
+            <?= htmlspecialchars($_SESSION['error']) ?>
+            <?php unset($_SESSION['error']); ?>
+          </div>
+        <?php endif; ?>
+
         <!-- Thread creation form (only for logged in users) -->
         <?php if (isset($_SESSION['user_id'])): ?>
             <div class="create-thread-section">
@@ -173,7 +217,7 @@ $result = $stmt->get_result();
                   <div class="response-section">
                     <button class="response-btn" onclick="toggleResponseForm('form-<?= $thread_id ?>')">Add Response</button>
                     
-                    <form id="form-<?= $thread_id ?>" class="response-form" style="display: none;" method="POST" action="add_response.php">
+                    <form id="form-<?= $thread_id ?>" class="response-form" style="display: none;" method="POST" action="../api/forum_threads/add_response.php">
                       <input type="hidden" name="thread_id" value="<?= $thread_id ?>">
                       <textarea name="response_body" rows="3" placeholder="Type your response here..." required></textarea>
                       <button type="submit" class="submit-response">Submit</button>
@@ -210,6 +254,18 @@ $result = $stmt->get_result();
                        class="response-profile-pic" width="30" height="30">
                   <span class="response-username"><?= htmlspecialchars($response['username']) ?></span>
                   <p class="response-body"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
+                  
+                  <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $response['user_id']): ?>
+                    <form method="POST" action="../api/forum_threads/delete_response.php" class="delete-response-form" onsubmit="return confirm('Are you sure you want to delete this response?');">
+                      <input type="hidden" name="response_id" value="<?= $response['id'] ?>">
+                      <input type="hidden" name="thread_id" value="<?= $thread_id ?>">
+                      <button type="submit" class="delete-response-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                      </button>
+                    </form>
+                  <?php endif; ?>
                 </div>
                 <?php 
                       endwhile;

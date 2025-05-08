@@ -1185,4 +1185,37 @@ body.sidebar-active .main-content {
     padding: 5px;
   }
 
-  
+.image-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.image-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.additional-images-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.additional-image {
+    position: relative;
+    width: 120px;
+    text-align: center;
+}
+
+.additional-image label {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+}
+

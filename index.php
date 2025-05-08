@@ -89,7 +89,7 @@ $result = $stmt->get_result();
     <div class="dropdown-content">
       <button class="value" onclick="window.location.href='./public/marketplace.php?view=explore';">Explore</button>
       <button class="value" onclick="window.location.href='./api/listings/view_listings.php';">View Listings</button>
-      <button class="value" onclick="window.location.href='./public/marketplace.php?view=list_item';">List Item</button>
+      <button class="value" onclick="window.location.href='./api/listings/create_listing.php';">List Item</button>
       <button class="value" onclick="window.location.href='./public/marketplace.php?view=list_item';">Saved Items</button>
     </div>
   </div>

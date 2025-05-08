@@ -78,10 +78,10 @@ while ($row = $result->fetch_assoc()) {
                             <p class="listing-price">£<?= number_format($listing['price'], 2) ?></p>
                             <p class="listing-date">Posted on: <?= date('F j, Y', strtotime($listing['created_at'])) ?></p>
                             <div class="listing-actions">
-            
+                            <a href="edit_listing.php" class="edit-btn">Edit</a>
                                 <a href="delete.php?id=<?= $listing['id'] ?>" class="btn delete-btn" onclick="return confirm('Are you sure you want to delete this listing?');">Delete</a>
                             </div>
-                            <a href="edit_listing.php" class="edit-btn">Edit</a>
+
                         </div>
                     </div>
                 <?php endforeach; ?>

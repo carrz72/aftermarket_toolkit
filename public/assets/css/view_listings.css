@@ -123,3 +123,187 @@ body {
 .no-listings a:hover {
     text-decoration: underline;
 }
+
+/* Menu styling (consistent with other pages) */
+.menu {
+    background-color: white;
+    box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.541);
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    text-align: center;
+    margin: 10px;
+    padding: 0.8rem;
+    position: relative;
+    border-radius: 15px;
+}
+
+.link {
+    color: white;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    transform-origin: center left;
+    transition: width 0.2s ease-in;
+    width: 70px;
+    height: 30px;
+    border-radius: 8px;
+    z-index: 1;
+    padding: 5px;
+}
+
+.link:before {
+    background-color: #189dc5;
+    border-radius: 8px;
+    content: "";
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    transform: translateX(100%);
+    transform-origin: center right;
+    transition: transform 0.2s ease-in;
+    width: 100%;
+    z-index: -1;
+}
+
+.link:hover:before {
+    transform: translateX(0);
+}
+
+.link-icon {
+    display: block;
+    flex-shrink: 0;
+    height: 48px;
+    left: 18px;
+    position: absolute;
+    width: 28px;
+}
+
+.link-icon img {
+    height: 30px;
+    width: 30px;
+}
+
+.link-title {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+    width: 100%;
+}
+
+.link:hover .link-title {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Improve listing actions */
+.listing-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    gap: 10px;
+}
+
+.edit-btn, .delete-btn {
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    flex: 1;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    display: inline-block;
+}
+
+.edit-btn {
+    background-color: #189dc5;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.edit-btn:hover {
+    background-color: #157a9e;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Create button styling */
+.create-btn {
+    display: inline-block;
+    background-color: #189dc5;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+    box-shadow: -3px 3px #000000;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+}
+
+.create-btn:hover {
+    background-color: #157a9e;
+    transform: translateY(-3px);
+    box-shadow: -4px 6px #000000;
+}
+
+.create-btn:active {
+    transform: translateY(1px);
+    box-shadow: -2px 2px #000000;
+}
+
+.create-listing {
+    text-align: center;
+    margin: 0 0 30px 0;
+}
+
+/* Improve responsiveness */
+@media (max-width: 768px) {
+    .listings-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .menu {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .listings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .listing-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .edit-btn, .delete-btn {
+        margin: 0;
+        width: 100%;
+    }
+    
+    .listings-container h1 {
+        font-size: 24px;
+    }
+}
