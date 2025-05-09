@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '../config/db.php';
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/includes/image_helper.php'; // Add this line
 session_start();
 
 $search = $_GET['search'] ?? '';
@@ -90,7 +91,7 @@ $result = $stmt->get_result();
       <button class="value" onclick="window.location.href='./public/marketplace.php?view=explore';">Explore</button>
       <button class="value" onclick="window.location.href='./api/listings/view_listings.php';">View Listings</button>
       <button class="value" onclick="window.location.href='./api/listings/create_listing.php';">List Item</button>
-      <button class="value" onclick="window.location.href='./public/marketplace.php?view=list_item';">Saved Items</button>
+      <button class="value" onclick="window.location.href='./public/saved_listings.php';">Saved Items</button>
     </div>
   </div>
   
@@ -224,19 +225,27 @@ $result = $stmt->get_result();
       <a href="./api/listings/listing.php?id=<?= $row['id'] ?>" class="card-link">
         <div class="card">
           <div class="card-header">
-            <img class="user-pic" src="<?= htmlspecialchars($row['profile_picture'] ?: './assets/images/default-user.jpg') ?>" alt="User" />
+            <img class="user-pic" src="<?= htmlspecialchars(getImageUrl($row['profile_picture']) ?: './public/assets/images/default-user.jpg') ?>" alt="User" />
             <span class="username"><?= htmlspecialchars($row['username']) ?></span>
           </div>
-          <img class="listing-img" src="<?= htmlspecialchars($row['image'] ?: './assets/images/default-image.jpg') ?>" alt="<?= htmlspecialchars($row['title']) ?>" />
+          <img class="listing-img" src="<?= htmlspecialchars(getImageUrl($row['image']) ?: './public/assets/images/default-image.jpg') ?>" alt="<?= htmlspecialchars($row['title']) ?>" />
           <div class="card-body">
-            <h3><?= htmlspecialchars($row['title']) ?></h3>
-            <p class="description"><?= htmlspecialchars($row['description']) ?></p>
-            <p class="price">£<?= number_format($row['price'], 2) ?></p>
-          </div>
+  <h3><?= htmlspecialchars($row['title']) ?></h3>
+  <div class="card-meta">
+    <p class="price">£<?= number_format($row['price'], 2) ?></p>
+    <?php if (!empty($row['condition'])): ?>
+      <span class="condition-badge" data-condition="<?= htmlspecialchars($row['condition']) ?>">
+        <?= htmlspecialchars($row['condition']) ?>
+      </span>
+    <?php endif; ?>
+  </div>
+  <p class="description"><?= htmlspecialchars(substr($row['description'], 0, 100)) . (strlen($row['description']) > 100 ? '...' : '') ?></p>
+</div>
           <div class="card-footer">
             <button class="bookmark" onclick="event.stopPropagation(); saveBookmark(<?= $row['id'] ?>); return false;">
               <img src="./public/assets/images/bookmark.svg" alt="Bookmark" />
             </button>
+            <span class="date-added"><?= date('M j', strtotime($row['created_at'])) ?></span>
           </div>
         </div>
       </a>
@@ -313,7 +322,7 @@ if ($stmt = $conn->prepare($sql_res)) {
     while ($response = $res_result->fetch_assoc()):
 ?>
 <div class="forum-response">
-  <img src="<?= htmlspecialchars($response['response_profile_pic']) ?>" 
+  <img src="<?= htmlspecialchars(getImageUrl($response['response_profile_pic']) ?: './public/assets/images/default-profile.jpg') ?>" 
        alt="<?= htmlspecialchars($response['username']) ?>" 
        class="response-profile-pic" 
        width="30" height="30">
@@ -420,12 +429,89 @@ if ($stmt = $conn->prepare($sql_res)) {
   });
 
  
-  function saveBookmark(listingId) {
 
-    console.log("Bookmarked listing: " + listingId);
-    
-  }
+function saveBookmark(listingId) {
+  // Get the current button to update its state
+  const button = event.currentTarget;
+  const isCurrentlyBookmarked = button.classList.contains('bookmarked');
   
+  // Set action based on current state
+  const action = isCurrentlyBookmarked ? 'remove' : 'add';
+  
+  // Send an AJAX request to toggle bookmark
+  fetch('./api/bookmarks/toggle_bookmark.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `listing_id=${listingId}&action=${action}`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log(`Bookmark ${action}ed for listing: ${listingId}`);
+      
+      // Update button appearance based on new state
+      if (action === 'add') {
+        // Bookmark added
+        button.classList.add('bookmarked');
+        
+        const bookmarkImg = button.querySelector('img');
+        if (bookmarkImg) {
+          bookmarkImg.src = './public/assets/images/bookmark-filled.svg'; // Change from .png to .svg
+          bookmarkImg.style.filter = 'none'; // Remove grayscale
+        }
+        
+      } else {
+        // Bookmark removed
+        button.classList.remove('bookmarked');
+        
+        const bookmarkImg = button.querySelector('img');
+        if (bookmarkImg) {
+          bookmarkImg.src = './public/assets/images/bookmark.svg';
+          bookmarkImg.style.filter = 'grayscale(100%)'; // Add grayscale
+        }
+        
+      }
+    } else {
+      console.error("Error toggling bookmark:", data.message);
+      if (data.message === "User not logged in") {
+        alert("Please log in to save items");
+        window.location.href = './public/login.php';
+      } else {
+        alert("Error: " + data.message);
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("Something went wrong. Please try again.");
+  });
+}
+  
+// Add at the bottom of your script section
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if user is logged in and initialize saved bookmarks
+  fetch('./api/bookmarks/get_bookmarks.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.bookmarks) {
+        // Mark already bookmarked items
+        data.bookmarks.forEach(bookmarkId => {
+          const bookmarkBtn = document.querySelector(`button.bookmark[onclick*="saveBookmark(${bookmarkId})"]`);
+          if (bookmarkBtn) {
+            bookmarkBtn.classList.add('bookmarked');
+            const img = bookmarkBtn.querySelector('img');
+            if (img) {
+              img.src = './public/assets/images/bookmark-filled.svg';
+              img.style.filter = 'none';
+            }
+          }
+        });
+      }
+    })
+    .catch(error => console.error('Error loading bookmarks:', error));
+});
 </script>
 
 </body>

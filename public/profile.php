@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/image_helper.php'; 
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -20,12 +21,11 @@ $user = $result->fetch_assoc();
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
-        $displayName = trim($_POST['display_name']);
         $bio = trim($_POST['bio']);
         $location = trim($_POST['location']);
         
-        $updateStmt = $conn->prepare("UPDATE users SET display_name = ?, bio = ?, location = ? WHERE id = ?");
-        $updateStmt->bind_param("sssi", $displayName, $bio, $location, $userId);
+        $updateStmt = $conn->prepare("UPDATE users SET bio = ?, location = ? WHERE id = ?");
+        $updateStmt->bind_param("ssi", $bio, $location, $userId);
         
         if ($updateStmt->execute()) {
             $message = "Profile updated successfully!";
@@ -85,6 +85,11 @@ $forumStmt = $conn->prepare("SELECT * FROM forum_threads WHERE user_id = ? ORDER
 $forumStmt->bind_param("i", $userId);
 $forumStmt->execute();
 $forumResult = $forumStmt->get_result();
+
+// Close statement objects after getting the results
+$stmt->close();
+$listingsStmt->close();
+$forumStmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -148,7 +153,7 @@ $forumResult = $forumStmt->get_result();
                 <?php endif; ?>
             </div>
             <div class="profile-details">
-                <h1><?= htmlspecialchars($user['display_name'] ?? $user['username']) ?></h1>
+                <h1><?= htmlspecialchars($user['username']) ?></h1>
                 <p class="username">@<?= htmlspecialchars($user['username']) ?></p>
                 <?php if (!empty($user['location'])): ?>
                     <p class="location"><img src="./assets/images/location-icon.svg" alt="Location"> <?= htmlspecialchars($user['location']) ?></p>
@@ -190,7 +195,8 @@ $forumResult = $forumStmt->get_result();
                             <div class="listing-card">
                                 <div class="listing-image">
                                     <?php if (!empty($listing['image'])): ?>
-                                        <img src="<?= htmlspecialchars($listing['image']) ?>" alt="<?= htmlspecialchars($listing['title']) ?>">
+                                        <img src="<?= htmlspecialchars(getImageUrl($listing['image']) ?: './assets/images/default-image.jpg') ?>" 
+                                             alt="<?= htmlspecialchars($listing['title']) ?>">
                                     <?php else: ?>
                                         <img src="./assets/images/default-image.jpg" alt="Default Listing Image">
                                     <?php endif; ?>
@@ -201,7 +207,7 @@ $forumResult = $forumStmt->get_result();
                                     <p class="listing-date">Listed: <?= date('M j, Y', strtotime($listing['created_at'])) ?></p>
                                     <div class="listing-actions">
                                         <a href="marketplace.php?listing=<?= $listing['id'] ?>" class="view-btn">View</a>
-                                        <a href="edit_listing.php?id=<?= $listing['id'] ?>" class="edit-btn">Edit</a>
+                                        <a href="../api/listings/edit_listing.php?id=<?= $listing['id'] ?>" class="edit-btn">Edit</a>
                                     </div>
                                 </div>
                             </div>
@@ -247,10 +253,6 @@ $forumResult = $forumStmt->get_result();
                             <?php endif; ?>
                             <input type="file" name="profile_picture" id="profile_picture">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="display_name">Display Name</label>
-                        <input type="text" id="display_name" name="display_name" value="<?= htmlspecialchars($user['display_name'] ?? '') ?>">
                     </div>
                     <div class="form-group">
                         <label for="location">Location</label>

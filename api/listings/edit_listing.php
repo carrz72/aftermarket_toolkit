@@ -29,6 +29,17 @@ if ($result->num_rows === 0) {
 
 $listing = $result->fetch_assoc();
 
+// Get additional images for this listing
+$additionalImagesQuery = "SELECT id, image_path FROM listing_images WHERE listing_id = ? ORDER BY display_order ASC";
+$additionalImagesStmt = $conn->prepare($additionalImagesQuery);
+$additionalImagesStmt->bind_param('i', $listingId);
+$additionalImagesStmt->execute();
+$additionalImagesResult = $additionalImagesStmt->get_result();
+$additionalImages = [];
+while ($img = $additionalImagesResult->fetch_assoc()) {
+    $additionalImages[] = $img;
+}
+
 // Get categories for dropdown
 $categoryQuery = "SELECT DISTINCT category FROM listings ORDER BY category ASC";
 $categoryResult = $conn->query($categoryQuery);
@@ -71,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Category is required';
     }
 
-    // Handle image upload if a new image is provided
+    // Handle main image upload if a new image is provided
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $filename = $_FILES['image']['name'];
@@ -83,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Create unique filename
             $newFilename = uniqid() . '.' . $filetype;
-            $uploadDir = '../../public/assets/images/listings/';
+            $uploadDir = '../../aftermarket_toolkit/uploads/';
             
             // Ensure directory exists
             if (!file_exists($uploadDir)) {
@@ -94,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Move uploaded file
             if (move_uploaded_file($_FILES['image']['tmp_name'], $destination)) {
-                $image = './assets/images/listings/' . $newFilename;
+                $image = "/aftermarket_toolkit/uploads/{$newFilename}";
             } else {
                 $errors[] = 'Error uploading image';
             }
@@ -103,21 +114,107 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If no errors, update the listing
     if (empty($errors)) {
-        $updateQuery = "UPDATE listings 
-                      SET title = ?, description = ?, price = ?, category = ?, `condition` = ?, image = ? 
-                      WHERE id = ? AND user_id = ?";
-        $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param('ssdsssii', $title, $description, $price, $category, $condition, $image, $listingId, $userId);
+        // Begin transaction
+        $conn->begin_transaction();
         
-        if ($updateStmt->execute()) {
+        try {
+            // Update main listing details
+            $updateQuery = "UPDATE listings 
+                          SET title = ?, description = ?, price = ?, category = ?, `condition` = ?, image = ? 
+                          WHERE id = ? AND user_id = ?";
+            $updateStmt = $conn->prepare($updateQuery);
+            $updateStmt->bind_param('ssdsssii', $title, $description, $price, $category, $condition, $image, $listingId, $userId);
+            $updateStmt->execute();
+            
+            // Process image removals if any
+            if (isset($_POST['remove_images']) && !empty($_POST['remove_images'])) {
+                foreach ($_POST['remove_images'] as $imageId) {
+                    // First get the image path to delete the file
+                    $imagePathQuery = "SELECT image_path FROM listing_images WHERE id = ? AND listing_id = ?";
+                    $imagePathStmt = $conn->prepare($imagePathQuery);
+                    $imagePathStmt->bind_param('ii', $imageId, $listingId);
+                    $imagePathStmt->execute();
+                    $pathResult = $imagePathStmt->get_result();
+                    
+                    if ($pathRow = $pathResult->fetch_assoc()) {
+                        $imagePath = $pathRow['image_path'];
+                        
+                        // Convert DB path to filesystem path
+                        if (strpos($imagePath, '/') === 0) {
+                            $fileToDelete = '../../' . substr($imagePath, 1);
+                            if (file_exists($fileToDelete)) {
+                                unlink($fileToDelete);
+                            }
+                        }
+                    }
+                    
+                    // Delete from database
+                    $deleteImageQuery = "DELETE FROM listing_images WHERE id = ? AND listing_id = ?";
+                    $deleteImageStmt = $conn->prepare($deleteImageQuery);
+                    $deleteImageStmt->bind_param('ii', $imageId, $listingId);
+                    $deleteImageStmt->execute();
+                }
+            }
+            
+            // Process additional images if any
+            if (isset($_FILES['additional_images']) && !empty($_FILES['additional_images']['name'][0])) {
+                // Get current highest display order
+                $orderQuery = "SELECT MAX(display_order) as max_order FROM listing_images WHERE listing_id = ?";
+                $orderStmt = $conn->prepare($orderQuery);
+                $orderStmt->bind_param('i', $listingId);
+                $orderStmt->execute();
+                $orderResult = $orderStmt->get_result();
+                $orderRow = $orderResult->fetch_assoc();
+                $displayOrder = ($orderRow['max_order'] ?? 0) + 1;
+                
+                // Process new image uploads
+                for ($i = 0; $i < count($_FILES['additional_images']['name']); $i++) {
+                    if ($_FILES['additional_images']['error'][$i] === 0) {
+                        $filename = $_FILES['additional_images']['name'][$i];
+                        $filetype = pathinfo($filename, PATHINFO_EXTENSION);
+                        
+                        // Verify file extension
+                        if (in_array(strtolower($filetype), $allowed)) {
+                            $newFilename = uniqid() . '_' . $i . '.' . $filetype;
+                            $uploadDir = '../../aftermarket_toolkit/uploads/';
+                            $destination = $uploadDir . $newFilename;
+                            
+                            if (move_uploaded_file($_FILES['additional_images']['tmp_name'][$i], $destination)) {
+                                $additionalImage = "/aftermarket_toolkit/uploads/{$newFilename}";
+                                
+                                // Insert additional image
+                                $imageQuery = "INSERT INTO listing_images (listing_id, image_path, display_order) VALUES (?, ?, ?)";
+                                $imageStmt = $conn->prepare($imageQuery);
+                                $imageStmt->bind_param('isi', $listingId, $additionalImage, $displayOrder);
+                                $imageStmt->execute();
+                                $displayOrder++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Commit all changes
+            $conn->commit();
             $success = true;
             
             // Refresh listing data
             $stmt->execute();
             $result = $stmt->get_result();
             $listing = $result->fetch_assoc();
-        } else {
-            $errors[] = 'Failed to update listing: ' . $conn->error;
+            
+            // Refresh additional images data
+            $additionalImagesStmt->execute();
+            $additionalImagesResult = $additionalImagesStmt->get_result();
+            $additionalImages = [];
+            while ($img = $additionalImagesResult->fetch_assoc()) {
+                $additionalImages[] = $img;
+            }
+            
+        } catch (Exception $e) {
+            // Roll back on error
+            $conn->rollback();
+            $errors[] = 'Database error: ' . $e->getMessage();
         }
     }
 }
@@ -238,6 +335,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             gap: 10px;
         }
+        
+        .additional-images-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .additional-image {
+            position: relative;
+            width: 120px;
+            text-align: center;
+        }
+        
+        .additional-image img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .additional-image label {
+            font-size: 12px;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -335,7 +465,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="form-group">
-                <label for="image">Image</label>
+                <label for="image">Main Image</label>
                 <?php if (!empty($listing['image'])): ?>
                     <div>
                         <?php
@@ -343,7 +473,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $imagePath = $listing['image'];
                         if (strpos($imagePath, '/') === 0) {
                             // Absolute path starting with /
-                            $displayPath = $imagePath; // Use as is
+                            $displayPath = '../../' . substr($imagePath, 1); 
                         } else if (strpos($imagePath, './assets/') === 0) {
                             // Relative path starting with ./assets/
                             $displayPath = '../../public/' . str_replace('./assets/', 'assets/', $imagePath);
@@ -353,7 +483,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         ?>
                         <img src="<?= htmlspecialchars($displayPath) ?>" alt="Current Image" class="image-preview">
-                        <p>Current image. Upload a new one to replace it.</p>
+                        <p>Current main image. Upload a new one to replace it.</p>
                     </div>
                 <?php endif; ?>
                 <input type="file" id="image" name="image" class="form-control" accept="image/*">
@@ -361,6 +491,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>New image preview:</p>
                     <img id="imagePreview" src="#" alt="Preview" class="image-preview">
                 </div>
+            </div>
+            
+            <!-- Additional Images Section -->
+            <div class="form-group">
+                <label>Additional Images</label>
+                <?php if (!empty($additionalImages)): ?>
+                    <div class="additional-images-container">
+                        <?php foreach ($additionalImages as $img): ?>
+                            <div class="additional-image">
+                                <?php
+                                $imgPath = $img['image_path'];
+                                if (strpos($imgPath, '/') === 0) {
+                                    $displayPath = '../../' . substr($imgPath, 1);
+                                } else if (strpos($imgPath, './assets/') === 0) {
+                                    $displayPath = '../../public/' . str_replace('./assets/', 'assets/', $imgPath);
+                                } else {
+                                    $displayPath = "../../public/{$imgPath}";
+                                }
+                                ?>
+                                <img src="<?= htmlspecialchars($displayPath) ?>" alt="Additional Image" class="image-preview">
+                                <label><input type="checkbox" name="remove_images[]" value="<?= $img['id'] ?>"> Remove</label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <label for="additional_images">Add More Images</label>
+                <input type="file" id="additional_images" name="additional_images[]" multiple class="form-control" accept="image/*">
+                <div id="additionalImagesPreview" class="image-preview-container"></div>
             </div>
             
             <div class="buttons">
@@ -371,7 +530,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        // Preview new image before upload
+        // Preview new main image before upload
         document.getElementById('image').addEventListener('change', function(e) {
             const preview = document.getElementById('imagePreview');
             const previewContainer = document.getElementById('newImagePreview');
@@ -386,6 +545,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (file) {
                 reader.readAsDataURL(file);
             }
+        });
+        
+        // Preview additional images
+        document.getElementById('additional_images').addEventListener('change', function(e) {
+            const previewContainer = document.getElementById('additionalImagesPreview');
+            previewContainer.innerHTML = '';
+            
+            Array.from(this.files).forEach(file => {
+                const reader = new FileReader();
+                const preview = document.createElement('img');
+                preview.className = 'image-preview';
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                
+                if (file) {
+                    reader.readAsDataURL(file);
+                    previewContainer.appendChild(preview);
+                }
+            });
         });
         
         // Handle "Other" category option

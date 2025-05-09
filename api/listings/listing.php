@@ -1,6 +1,6 @@
 <?php
-// filepath: c:\xampp\htdocs\aftermarket_toolkit\api\listings\listing.php
 require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../includes/image_helper.php';
 session_start();
 
 // Get listing ID from URL
@@ -88,6 +88,21 @@ $additionalImages = [];
 while ($image = $imagesResult->fetch_assoc()) {
     $additionalImages[] = $image['image_path'];
 }
+
+// Function to get CSS class for condition badge
+function getConditionClass($condition) {
+    $condition = strtolower($condition);
+    switch ($condition) {
+        case 'new': return 'new';
+        case 'like new': return 'like-new';
+        case 'good': return 'good';
+        case 'fair': return 'fair';
+        case 'poor': 
+        case 'used': 
+            return 'used';
+        default: return '';
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -96,7 +111,7 @@ while ($image = $imagesResult->fetch_assoc()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($listing['title']) ?> - Aftermarket Toolbox</title>
-    <link rel="stylesheet" href="../../public/assets/css/marketplace.css">
+    <link rel="stylesheet" href="../../public/assets/css/listing.css">
     <style>
         .listing-container {
             max-width: 1200px;
@@ -123,6 +138,7 @@ while ($image = $imagesResult->fetch_assoc()) {
             object-fit: contain;
             background-color: #fff;
             display: block;
+            transition: opacity 0.3s ease;
         }
         
         .thumbnail-container {
@@ -140,11 +156,19 @@ while ($image = $imagesResult->fetch_assoc()) {
             cursor: pointer;
             border: 2px solid transparent;
             border-radius: 5px;
-            transition: border-color 0.3s;
+            transition: all 0.2s ease-in-out;
+            opacity: 0.7;
+        }
+        
+        .thumbnail:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
         
         .thumbnail.active {
             border-color: #189dc5;
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(24, 157, 197, 0.5);
         }
         
         .gallery-nav {
@@ -356,41 +380,21 @@ while ($image = $imagesResult->fetch_assoc()) {
             
             // Display main image (first image in array)
             $mainImage = !empty($allImages[0]) ? $allImages[0] : '../../public/assets/images/default-image.jpg';
-            
-            // Handle different image path formats
-            $mainImagePath = $mainImage;
-            if (strpos($mainImage, '/') === 0) {
-                // Absolute path starting with /
-                $mainImagePath = $mainImage; 
-            } else if (strpos($mainImage, './assets/') === 0) {
-                // Relative path starting with ./assets/
-                $mainImagePath = '../../public/' . str_replace('./assets/', 'assets/', $mainImage);
-            } else {
-                // Any other format
-                $mainImagePath = '../../public/' . $mainImage;
-            }
             ?>
             
-            <img src="<?= htmlspecialchars($mainImagePath) ?>" alt="<?= htmlspecialchars($listing['title']) ?>" class="main-image" id="mainImage">
+            <img src="<?= htmlspecialchars(getImageUrl($mainImage) ?: '../../public/assets/images/default-image.jpg') ?>" 
+                 alt="<?= htmlspecialchars($listing['title']) ?>" 
+                 class="main-image" 
+                 id="mainImage">
             
             <?php if (count($allImages) > 1): ?>
                 <button class="gallery-nav gallery-prev" onclick="prevImage()">&lt;</button>
                 <button class="gallery-nav gallery-next" onclick="nextImage()">&gt;</button>
                 
                 <div class="thumbnail-container">
-                    <?php foreach ($allImages as $index => $img): 
-                        // Handle different image path formats
-                        $imgPath = $img;
-                        if (strpos($img, '/') === 0) {
-                            $imgPath = $img;
-                        } else if (strpos($img, './assets/') === 0) {
-                            $imgPath = '../../public/' . str_replace('./assets/', 'assets/', $img);
-                        } else {
-                            $imgPath = '../../public/' . $img;
-                        }
-                    ?>
+                    <?php foreach ($allImages as $index => $img): ?>
                         <img 
-                            src="<?= htmlspecialchars($imgPath) ?>" 
+                            src="<?= htmlspecialchars(getImageUrl($img) ?: '../../public/assets/images/default-image.jpg') ?>" 
                             alt="Thumbnail" 
                             class="thumbnail <?= $index === 0 ? 'active' : '' ?>" 
                             onclick="changeImage(<?= $index ?>, this)">
@@ -400,18 +404,46 @@ while ($image = $imagesResult->fetch_assoc()) {
         </div>
         
         <div class="listing-details">
-            <a href="../../public/marketplace.php" class="back-link">← Back to Marketplace</a>
+            <a href="../../public/marketplace.php" class="back-link">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                </svg>
+                Back to Marketplace
+            </a>
             
             <h1 class="listing-title"><?= htmlspecialchars($listing['title']) ?></h1>
             
             <div class="listing-price">£<?= number_format($listing['price'], 2) ?></div>
             
             <div class="listing-meta">
-                <span>Category: <?= htmlspecialchars($listing['category']) ?></span>
-                <span>Condition: <?= htmlspecialchars($listing['condition']) ?></span>
-                <span>Posted: <?= date('F j, Y', strtotime($listing['created_at'])) ?></span>
+                <span>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                    </svg>
+                    Category: <?= htmlspecialchars($listing['category']) ?>
+                </span>
+                
+                <span>
+                    <span class="condition-badge <?= getConditionClass($listing['condition']) ?>">
+                        <?= htmlspecialchars($listing['condition']) ?>
+                    </span>
+                </span>
+                
+                <span>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>
+                    Posted: <?= date('F j, Y', strtotime($listing['created_at'])) ?>
+                </span>
+                
                 <?php if (!empty($listing['location'])): ?>
-                    <span>Location: <?= htmlspecialchars($listing['location']) ?></span>
+                    <span>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        </svg>
+                        <?= htmlspecialchars($listing['location']) ?>
+                    </span>
                 <?php endif; ?>
             </div>
             
@@ -419,23 +451,28 @@ while ($image = $imagesResult->fetch_assoc()) {
                 <?= nl2br(htmlspecialchars($listing['description'])) ?>
             </div>
             
-            <div class="form-group">
-                <label for="location">Location</label>
-                <input type="text" id="location" name="location" class="form-control" 
-                       value="<?= htmlspecialchars($listing['location'] ?? '') ?>" 
-                       placeholder="City, Region or Postcode">
-            </div>
+            <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $listing['seller_id']): ?>
+                <div class="form-group">
+                    <label for="location">Update Location</label>
+                    <input type="text" id="location" name="location" class="form-control" 
+                           value="<?= htmlspecialchars($listing['location'] ?? '') ?>" 
+                           placeholder="City, Region or Postcode">
+                </div>
+            <?php endif; ?>
             
             <div class="seller-container">
                 <?php 
+                // Use the same pattern as other images for consistency
                 $profilePic = !empty($listing['profile_picture']) 
-                    ? $listing['profile_picture'] 
+                    ? getImageUrl($listing['profile_picture']) ?: '../../public/assets/images/default-profile.jpg'
                     : '../../public/assets/images/default-profile.jpg'; 
                 ?>
-                <img src="<?= htmlspecialchars($profilePic) ?>" alt="Seller" class="seller-avatar">
+                <img src="<?= htmlspecialchars($profilePic) ?>" 
+                     alt="<?= htmlspecialchars($listing['username']) ?>" 
+                     class="seller-avatar">
                 <div>
                     <div class="seller-name"><?= htmlspecialchars($listing['username']) ?></div>
-                    <div>Seller</div>
+                    <div class="seller-role">Seller</div>
                 </div>
             </div>
             
@@ -461,14 +498,19 @@ while ($image = $imagesResult->fetch_assoc()) {
                             <input type="hidden" name="action" value="save">
                             <button type="submit" class="btn btn-save">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+                                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5h10v13z"/>
                                 </svg>
                                 Save
                             </button>
                         <?php endif; ?>
                     </form>
                 <?php elseif (!isset($_SESSION['user_id'])): ?>
-                    <a href="../../public/login.php" class="btn btn-message">Login to contact seller</a>
+                    <a href="../../public/login.php" class="btn btn-message">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
+                        </svg>
+                        Login to Contact Seller
+                    </a>
                 <?php endif; ?>
                 
                 <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $listing['seller_id']): ?>
@@ -485,26 +527,20 @@ while ($image = $imagesResult->fetch_assoc()) {
 
     <script>
         // Image gallery functionality
-        const images = <?= json_encode($allImages) ?>;
+        const images = [
+            <?php foreach($allImages as $img): ?>
+                "<?= htmlspecialchars(getImageUrl($img) ?: '../../public/assets/images/default-image.jpg') ?>",
+            <?php endforeach; ?>
+        ];
+        
         let currentImageIndex = 0;
         const mainImage = document.getElementById('mainImage');
-        
-        // Process image path for display
-        function processImagePath(path) {
-            if (path.startsWith('/')) {
-                return path; // Absolute path
-            } else if (path.startsWith('./assets/')) {
-                return '../../public/' + path.replace('./assets/', 'assets/');
-            } else {
-                return '../../public/' + path;
-            }
-        }
         
         // Change displayed image
         function changeImage(index, thumbnail) {
             if (index >= 0 && index < images.length) {
                 currentImageIndex = index;
-                mainImage.src = processImagePath(images[index]);
+                mainImage.src = images[index];
                 
                 // Update active thumbnail
                 document.querySelectorAll('.thumbnail').forEach(thumb => {
@@ -514,7 +550,10 @@ while ($image = $imagesResult->fetch_assoc()) {
                 if (thumbnail) {
                     thumbnail.classList.add('active');
                 } else {
-                    document.querySelectorAll('.thumbnail')[index].classList.add('active');
+                    const thumbnails = document.querySelectorAll('.thumbnail');
+                    if (thumbnails[index]) {
+                        thumbnails[index].classList.add('active');
+                    }
                 }
             }
         }
@@ -538,6 +577,39 @@ while ($image = $imagesResult->fetch_assoc()) {
                 prevImage();
             }
         });
+        
+        // Update location (for seller only)
+        <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $listing['seller_id']): ?>
+        document.getElementById('location').addEventListener('change', function() {
+            const newLocation = this.value.trim();
+            
+            fetch('update_location.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    listing_id: <?= $listingId ?>,
+                    location: newLocation
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const message = document.createElement('div');
+                    message.textContent = 'Location updated!';
+                    message.style.color = 'green';
+                    message.style.marginTop = '5px';
+                    this.parentNode.appendChild(message);
+                    
+                    setTimeout(() => {
+                        message.remove();
+                    }, 3000);
+                }
+            });
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>

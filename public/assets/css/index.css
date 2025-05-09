@@ -130,36 +130,275 @@ footer {
   object-fit: cover;
 }
 
+/* ========================================================================
+   Card Container & Grid Layout
+======================================================================== */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+/* ========================================================================
+   Card Base Styling - Improved
+======================================================================== */
 .card {
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.97);
+  color: #333;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
 }
 
-.card-body {
-  padding: 15px;
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-.card-title {
-  font-size: 18px;
+/* Card Header with improved contrast */
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem;
+  background-color: #189dc5;
+  background-image: linear-gradient(to right, #189dc5, #1a8db0);
+  color: #fff;
+}
+
+/* User picture with better sizing */
+.user-pic {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.username {
   font-weight: bold;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.card-text {
-  font-size: 14px;
-  margin-bottom: 10px;
-}
-
-.card .btn {
-  background-color: #189dc5;
-  border: none;
-  color: white;
-  padding: 10px;
+/* Main listing image with fallback styling */
+.listing-img {
   width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  background-color: #f5f5f5;
+  background-image: url("../images/image-loading.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 48px;
 }
 
-.card .btn:hover {
+/* Card Body with improved spacing */
+.card-body {
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-body h3 {
   background-color: #189dc5;
+  box-shadow: 0px 4px rgb(5, 5, 5);
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 14px;
+  padding: 10px 8px;
+  text-align: center;
+  border-radius: 8px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Card Meta section with improved alignment */
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+  gap: 10px;
+}
+
+.price {
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  color: #222;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Condition Badge with improved visibility */
+.condition-badge {
+  background-color: #189dc5;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Condition-specific colors */
+.condition-badge[data-condition="New"],
+.condition-badge.new {
+  background-color: #28a745;
+}
+
+.condition-badge[data-condition="Like New"],
+.condition-badge.like-new {
+  background-color: #20c997;
+}
+
+.condition-badge[data-condition="Good"],
+.condition-badge.good {
+  background-color: #17a2b8;
+}
+
+.condition-badge[data-condition="Fair"],
+.condition-badge.fair {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.condition-badge[data-condition="Poor"],
+.condition-badge.poor,
+.condition-badge.used {
+  background-color: #dc3545;
+}
+
+/* Description with better readability */
+.description {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #fff;
+  background-color: #4a4a4a;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  text-align: center;
+  display: -webkit-box;
+
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 75px;
+}
+
+/* Card Footer with improved positioning */
+.card-footer {
+  margin-top: auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: row-reverse; /* This reverses the order of elements */
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  background-color: rgba(0,0,0,0.02);
+}
+
+/* Bookmark Button with better feedback */
+.bookmark {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background-color 0.2s, transform 0.2s;
+  position: relative;
+  z-index: 2;
+}
+
+.bookmark:hover {
+  background-color: rgba(0,0,0,0.05);
+  transform: scale(1.1);
+}
+
+/* Update the bookmark icon styles */
+.bookmark img {
+  width: 24px;
+  height: 24px;
+  filter: grayscale(100%);
+  transition: filter 0.3s;
+  box-sizing: content-box;
+}
+
+.bookmark.bookmarked img {
+  width: 24px;  /* Same width as non-bookmarked */
+  height: 24px; /* Same height as non-bookmarked */
+  filter: none; /* Ensure the filled icon has no filter */
+}
+
+.bookmark.saved img {
+  filter: grayscale(0%);
+}
+
+.bookmark.bookmarked img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Add date display */
+.date-added {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Card Link with improved interaction */
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+  transition: transform 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-container {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 15px;
+    width: 95%;
+  }
+
+  .card-body {
+    padding: 0.9rem;
+  }
+  
+  .listing-img {
+    height: 170px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 /* ========================================================================
@@ -436,28 +675,29 @@ text-align: center;
 }
 
 .card-container {
-  display: flex;
-  flex-wrap: wrap; /* Allow items to wrap to the next line */
-  gap: 17px; /* Space between items */
-  justify-content: space-between; /* Align items to the center (optional) */
-  width: 80%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 90%;
+  margin: 0 auto;
 }
 
 .card {
-  background: #b8b8b8ce;
-  color: white;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: transform 0.3s, box-shadow 0.3s;
   display: flex;
   flex-direction: column;
-  width: 100%; /* Ensures cards take up available space in each grid column */
-  max-width: 325px; /* Limit maximum width of each card */
+  height: 100%;
+  max-width: 100%;
 }
 
 .card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .card-header {
@@ -480,7 +720,7 @@ text-align: center;
 
 .listing-img {
   width: 100%;
-  height: 180px;
+  height: 200px;
   object-fit: cover;
 }
 
@@ -525,7 +765,11 @@ text-align: center;
   margin-top: auto;
   padding: 0.75rem 1rem;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: row-reverse; /* This reverses the order of elements */
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  background-color: rgba(0,0,0,0.02);
 }
 
 .bookmark {
@@ -540,11 +784,19 @@ text-align: center;
   height: 24px;
   filter: grayscale(100%);
   transition: filter 0.3s;
+  box-sizing: content-box;
 }
 
 .bookmark:hover img {
   filter: grayscale(0%);
 }
+
+.bookmark.bookmarked img {
+  width: 24px;
+  height: 24px;
+  filter: none;
+}
+
 .imge {
   background-color: #189dc5;
   box-shadow: -4px 4px black;
@@ -670,7 +922,6 @@ text-align: center;
   border: 1px solid rgb(78, 78, 78);
   color: rgb(0, 0, 0);
   font-size: 16px;
-  padding: 10px;
   transition: 0.4s;
   width: fit-content;
 }
@@ -1219,3 +1470,76 @@ body.sidebar-active .main-content {
     font-size: 12px;
 }
 
+/* Make card links cover the entire card and remove default styling */
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.condition-badge {
+  background-color: #189dc5;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Condition-specific colors */
+.condition-badge[data-condition="New"] {
+  background-color: #28a745;
+}
+
+.condition-badge[data-condition="Like New"] {
+  background-color: #20c997;
+}
+
+.condition-badge[data-condition="Good"] {
+  background-color: #17a2b8;
+}
+
+.condition-badge[data-condition="Fair"] {
+  background-color: #ffc107;
+}
+
+.condition-badge[data-condition="Poor"] {
+  background-color: #dc3545;
+}
+
+/* Update existing styles */
+.card .price {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.card .description {
+  font-size: 0.9rem;
+  margin-top: 10px;
+  color: #ffffff;
+  text-align: center;
+  justify-content: center;
+ align-items: center;
+}
+
+.description{
+  margin: auto 0;
+}
+
+/* Add this to your existing CSS (around line 362) */
+.bookmark-tooltip.removed {
+  background-color: #dc3545;
+}
+
+.bookmark-tooltip.removed:after {
+  border-color: #dc3545 transparent transparent transparent;
+}
