@@ -289,6 +289,7 @@ function getConditionClass($condition) {
             background-color: #189dc5;
             color: white;
             flex: 1;
+            text-decoration: none;
         }
         
         .btn-message:hover {
@@ -441,7 +442,7 @@ function getConditionClass($condition) {
                      alt="<?= htmlspecialchars($listing['username']) ?>" 
                      class="seller-avatar">
                 <div>
-                    <div class="seller-name"><?= htmlspecialchars($listing['username']) ?></div>
+                    <div class="seller-name"><a href="../../public/profile.php?user_id=<?= $listing['seller_id'] ?>"><?= htmlspecialchars($listing['username']) ?></a></div>
                     <div class="seller-role">Seller</div>
                 </div>
             </div>

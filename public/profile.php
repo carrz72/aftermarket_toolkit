@@ -9,17 +9,47 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Determine if viewing own profile or someone else's
+$viewingSelf = true;
+$viewedUserId = $_SESSION['user_id'];
+$isMyFriend = false;
+
+// If a user_id is provided in the URL, we're viewing someone else's profile
+if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
+    $requestedUserId = (int)$_GET['user_id'];
+    
+    // Don't process if trying to view your own profile with the user_id parameter
+    if ($requestedUserId !== $_SESSION['user_id']) {
+        $viewingSelf = false;
+        $viewedUserId = $requestedUserId;
+        
+        // Check if this user is a friend
+        $checkFriendStmt = $conn->prepare("
+            SELECT * FROM friends 
+            WHERE user_id = ? AND friend_id = ?
+        ");
+        $checkFriendStmt->bind_param("ii", $_SESSION['user_id'], $viewedUserId);
+        $checkFriendStmt->execute();
+        $isMyFriend = $checkFriendStmt->get_result()->num_rows > 0;
+    }
+}
+
 // Get user data
-$userId = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
-$stmt->bind_param("i", $userId);
+$stmt->bind_param("i", $viewedUserId);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-// Handle profile update
+// If user doesn't exist, redirect to own profile
+if (!$user) {
+    header("Location: profile.php");
+    exit();
+}
+
+// Handle profile update (only for own profile)
 $message = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($viewingSelf && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
         $bio = trim($_POST['bio']);
         $location = trim($_POST['location']);
@@ -76,13 +106,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get user's listings
 $listingsStmt = $conn->prepare("SELECT * FROM listings WHERE user_id = ? ORDER BY created_at DESC");
-$listingsStmt->bind_param("i", $userId);
+$listingsStmt->bind_param("i", $viewedUserId);
 $listingsStmt->execute();
 $listingsResult = $listingsStmt->get_result();
 
 // Get user's forum posts
 $forumStmt = $conn->prepare("SELECT * FROM forum_threads WHERE user_id = ? ORDER BY created_at DESC");
-$forumStmt->bind_param("i", $userId);
+$forumStmt->bind_param("i", $viewedUserId);
 $forumStmt->execute();
 $forumResult = $forumStmt->get_result();
 
@@ -155,7 +185,7 @@ $forumStmt->close();
                     </button>
                     <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
                     <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-                    <button class="value" onclick="window.location.href='./account.php';">Account Settings</button>
+                    <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
                     <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
                 <?php else: ?>
                     <button class="value" onclick="window.location.href='./login.php';">Login</button>
@@ -181,7 +211,7 @@ $forumStmt->close();
                 <?php if (!empty($user['profile_picture'])): ?>
                     <img src="<?= htmlspecialchars($user['profile_picture']) ?>" alt="Profile Picture">
                 <?php else: ?>
-                    <img src="./assets/images/default_profile.jpg" alt="Default Profile">
+                    <img src="./assets/images/default-profile.jpg" alt="Default Profile">
                 <?php endif; ?>
             </div>
             <div class="profile-details">
@@ -191,6 +221,25 @@ $forumStmt->close();
                     <p class="location"><img src="./assets/images/location-icon.svg" alt="Location"> <?= htmlspecialchars($user['location']) ?></p>
                 <?php endif; ?>
                 <p class="member-since">Member since: <?= date('F Y', strtotime($user['created_at'])) ?></p>
+                
+                <?php if (!$viewingSelf): ?>
+                    <div class="profile-actions">
+                        <?php if ($isMyFriend): ?>
+                            <a href="chat.php?chat=<?= $viewedUserId ?>" class="action-btn message-btn">Send Message</a>
+                            <form method="POST" action="friends.php" style="display: inline;">
+                                <input type="hidden" name="friend_id" value="<?= $viewedUserId ?>">
+                                <input type="hidden" name="action" value="remove">
+                                <button type="submit" class="action-btn unfriend-btn">Unfriend</button>
+                            </form>
+                        <?php else: ?>
+                            <form method="POST" action="friends.php" style="display: inline;">
+                                <input type="hidden" name="friend_id" value="<?= $viewedUserId ?>">
+                                <input type="hidden" name="action" value="send_request">
+                                <button type="submit" class="action-btn add-friend-btn">Add Friend</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -207,7 +256,9 @@ $forumStmt->close();
                 <li class="active"><a href="#about" data-section="about">About</a></li>
                 <li><a href="#listings" data-section="listings">Listings</a></li>
                 <li><a href="#forums" data-section="forums">Forum Posts</a></li>
+                <?php if ($viewingSelf): ?>
                 <li><a href="#settings" data-section="settings">Settings</a></li>
+                <?php endif; ?>
             </ul>
         </div>
 
@@ -220,7 +271,11 @@ $forumStmt->close();
 
             <!-- Listings Section -->
             <section id="listings" class="profile-section">
-                <h2>My Listings</h2>
+                <?php if ($viewingSelf): ?>
+                    <h2>My Listings</h2>
+                <?php else: ?>
+                    <h2><?= htmlspecialchars($user['username']) ?>'s Listings</h2>
+                <?php endif; ?>
                 <div class="listings-container">
                     <?php if ($listingsResult && $listingsResult->num_rows > 0): ?>
                         <?php while ($listing = $listingsResult->fetch_assoc()): ?>

@@ -12,6 +12,42 @@ $search = $_GET['search'] ?? '';
 $categoryFilter = $_GET['category'] ?? '';
 $condition = $_GET['condition'] ?? '';
 
+// Pagination variables
+$limit = 9; // Show 9 listings per page
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Count total listings for pagination
+$countSql = "
+  SELECT COUNT(*) as total
+  FROM listings 
+  JOIN users ON listings.user_id = users.id 
+  WHERE (listings.title LIKE ? OR listings.description LIKE ?)
+";
+$countParams = ["%$search%", "%$search%"];
+$countTypes = "ss";
+
+if (!empty($categoryFilter)) {
+  $countSql .= " AND listings.category = ?";
+  $countParams[] = $categoryFilter;
+  $countTypes .= "s";
+}
+
+if (!empty($condition)) {
+  $countSql .= " AND listings.condition = ?";
+  $countParams[] = $condition;
+  $countTypes .= "s";
+}
+
+$countStmt = $conn->prepare($countSql);
+$countStmt->bind_param($countTypes, ...$countParams);
+$countStmt->execute();
+$countResult = $countStmt->get_result();
+$totalRow = $countResult->fetch_assoc();
+$totalListings = $totalRow['total'];
+$totalPages = ceil($totalListings / $limit);
+
+// Modified SQL with LIMIT and OFFSET for pagination
 $sql = "
   SELECT listings.*, users.username, users.profile_picture 
   FROM listings 
@@ -33,7 +69,10 @@ if (!empty($condition)) {
   $types .= "s";
 }
 
-$sql .= " ORDER BY listings.created_at DESC";
+$sql .= " ORDER BY listings.created_at DESC LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
+$types .= "ii";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
@@ -118,7 +157,7 @@ function getConditionClass($condition) {
       </button>
       <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
       <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-      <button class="value" onclick="window.location.href='./account.php';">Account Settings</button>
+      <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
       <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
       <?php else: ?>
         <button class="value" onclick="window.location.href='./login.php';">Login</button>
@@ -234,6 +273,23 @@ function getConditionClass($condition) {
         <p>No listings found matching your criteria.</p>
         <a href="./marketplace.php" class="reset-search">Clear search and see all listings</a>
       </div>
+    <?php endif; ?>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <?php if ($totalPages > 1): ?>
+      <?php if ($page > 1): ?>
+        <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>&category=<?= urlencode($categoryFilter) ?>&condition=<?= urlencode($condition) ?>" class="prev">Previous</a>
+      <?php endif; ?>
+      
+      <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&category=<?= urlencode($categoryFilter) ?>&condition=<?= urlencode($condition) ?>" class="<?= $i === $page ? 'active' : '' ?>"><?= $i ?></a>
+      <?php endfor; ?>
+      
+      <?php if ($page < $totalPages): ?>
+        <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>&category=<?= urlencode($categoryFilter) ?>&condition=<?= urlencode($condition) ?>" class="next">Next</a>
+      <?php endif; ?>
     <?php endif; ?>
   </div>
 

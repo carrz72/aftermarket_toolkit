@@ -283,6 +283,61 @@ body {
     font-size: 0.9rem;
 }
 
+/* Profile Actions */
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.message-btn {
+    background-color: #189dc5;
+    color: white;
+}
+
+.message-btn:hover {
+    background-color: #157a9e;
+}
+
+.add-friend-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.add-friend-btn:hover {
+    background-color: #218838;
+}
+
+.unfriend-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.unfriend-btn:hover {
+    background-color: #c82333;
+}
+
 /* Message alerts */
 .message {
     margin: 20px;

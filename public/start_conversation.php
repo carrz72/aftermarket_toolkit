@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/image_helper.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -8,11 +9,27 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-
-
 $userId = $_SESSION['user_id'];
 $error = '';
 $success = '';
+
+// Get friends list
+$friendsQuery = "
+    SELECT u.id, u.username, u.profile_picture 
+    FROM friends f
+    JOIN users u ON f.friend_id = u.id
+    WHERE f.user_id = ?
+    ORDER BY u.username
+";
+$friendsStmt = $conn->prepare($friendsQuery);
+$friendsStmt->bind_param("i", $userId);
+$friendsStmt->execute();
+$friendsResult = $friendsStmt->get_result();
+
+$friends = [];
+while ($friend = $friendsResult->fetch_assoc()) {
+    $friends[] = $friend;
+}
 
 // Handle the form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_conversation'])) {
@@ -86,9 +103,7 @@ while ($user = $usersResult->fetch_assoc()) {
             width: fit-content;
         }
         
-        .back-button:hover {
-            text-decoration: underline;
-        }
+      
         
         .back-button .icon {
             margin-right: 8px;
@@ -188,6 +203,82 @@ while ($user = $usersResult->fetch_assoc()) {
             position: relative;
         }
         
+        /* Friends dropdown styling */
+        .friends-dropdown {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .friends-dropdown-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .friends-dropdown-button:hover {
+            background-color: #e9ecef;
+        }
+        
+        .dropdown-arrow {
+            transition: transform 0.2s ease;
+        }
+        
+        .friends-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .friends-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .friends-dropdown.active .friends-list {
+            display: block;
+        }
+        
+        .friend-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .friend-item:last-child {
+            border-bottom: none;
+        }
+        
+        .friend-item:hover {
+            background-color: #f0f2f5;
+        }
+        
+        .friend-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
         .user-suggestions {
             position: absolute;
             top: 100%;
@@ -274,6 +365,25 @@ while ($user = $usersResult->fetch_assoc()) {
         <form method="POST" action="">
             <div class="form-group user-search-container">
                 <label for="username">Select User:</label>
+                <?php if (!empty($friends)): ?>
+                <div class="friends-dropdown">
+                    <button type="button" class="friends-dropdown-button">
+                        <span>Select from friends</span>
+                        <svg class="icon dropdown-arrow" viewBox="0 0 24 24">
+                            <path d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </button>
+                    <div class="friends-list">
+                        <?php foreach($friends as $friend): ?>
+                            <div class="friend-item" data-username="<?= htmlspecialchars($friend['username']) ?>">
+                                <img src="<?= htmlspecialchars(getImageUrl($friend['profile_picture']) ?: './assets/images/default-profile.jpg') ?>" 
+                                     alt="<?= htmlspecialchars($friend['username']) ?>" class="friend-avatar">
+                                <span><?= htmlspecialchars($friend['username']) ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <input type="text" id="username" name="username" class="form-control" 
                        placeholder="Type username to search" autocomplete="off">
                 <div class="user-suggestions" id="userSuggestions"></div>
@@ -296,6 +406,33 @@ while ($user = $usersResult->fetch_assoc()) {
         const suggestionsContainer = document.getElementById('userSuggestions');
         const users = <?= json_encode($users) ?>;
         
+        // Friends dropdown functionality
+        const friendsDropdown = document.querySelector('.friends-dropdown');
+        const friendsDropdownButton = document.querySelector('.friends-dropdown-button');
+        
+        if (friendsDropdownButton) {
+            friendsDropdownButton.addEventListener('click', function() {
+                friendsDropdown.classList.toggle('active');
+            });
+            
+            // When clicking outside the dropdown, close it
+            document.addEventListener('click', function(e) {
+                if (!friendsDropdown.contains(e.target)) {
+                    friendsDropdown.classList.remove('active');
+                }
+            });
+            
+            // Add click handlers to friend items
+            document.querySelectorAll('.friend-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    userInput.value = this.dataset.username;
+                    friendsDropdown.classList.remove('active');
+                    // Focus on the message textarea after selecting a friend
+                    document.getElementById('message').focus();
+                });
+            });
+        }
+        
         userInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             
@@ -314,13 +451,17 @@ while ($user = $usersResult->fetch_assoc()) {
             // Show matching users or a no results message
             if (matches.length > 0) {
                 suggestionsContainer.classList.add('active');
-                suggestionsContainer.innerHTML = matches.map(user => {
-                    const profileImg = user.profile_picture ? 
-                        `./assets/images/${user.profile_picture}` : 
-                        './assets/images/default-profile.jpg';
-                    
+                
+                // Pre-process the profile images paths on the server side and include them in the user data
+                const processedUsers = matches.map(user => {
+                    // Use PHP to generate proper image URLs for each user
+                    user.processedImageUrl = '<?= getImageUrl("") ?>'.replace('""', user.profile_picture || './assets/images/default-profile.jpg');
+                    return user;
+                });
+                
+                suggestionsContainer.innerHTML = processedUsers.map(user => {
                     return `<div class="user-suggestion" data-username="${user.username}">
-                        <img src="${profileImg}" alt="${user.username}" class="user-avatar">
+                        <img src="${user.processedImageUrl}" alt="${user.username}" class="user-avatar">
                         <span>${user.username}</span>
                     </div>`;
                 }).join('');

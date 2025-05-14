@@ -158,7 +158,7 @@ $result = $stmt->get_result();
       </button>
       <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
       <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-      <button class="value" onclick="window.location.href='./account.php';">Account Settings</button>
+      <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
       <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
     <?php else: ?>
       <button class="value" onclick="window.location.href='./login.php';">Login</button>
@@ -236,7 +236,7 @@ $result = $stmt->get_result();
                      alt="<?= htmlspecialchars($row['username']) ?>" 
                      class="profile-pic">
                 <div class="pro-details">
-                  <?= htmlspecialchars($row['username']) ?><br>
+                  <a href="profile.php?user_id=<?= $row['user_id'] ?>"><?= htmlspecialchars($row['username']) ?></a><br>
                   <?= date('M j, Y', strtotime($row['created_at'])) ?>
                 </div>
               </div>
@@ -297,7 +297,7 @@ $result = $stmt->get_result();
                   <img src="<?= htmlspecialchars($response_pic) ?>" 
                        alt="<?= htmlspecialchars($response['username']) ?>" 
                        class="response-profile-pic" width="30" height="30">
-                  <span class="response-username"><?= htmlspecialchars($response['username']) ?></span>
+                  <span class="response-username"><a href="profile.php?user_id=<?= $response['user_id'] ?>"><?= htmlspecialchars($response['username']) ?></a></span>
                   <div class="response-content">
                     <p class="response-body <?= (strlen($response['body']) > 200) ? 'collapsible collapsed' : '' ?>"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
                     <?php if (strlen($response['body']) > 200): ?>
@@ -341,7 +341,7 @@ $result = $stmt->get_result();
                           <img src="<?= htmlspecialchars($response_pic) ?>" 
                                alt="<?= htmlspecialchars($response['username']) ?>" 
                                class="response-profile-pic" width="30" height="30">
-                          <span class="response-username"><?= htmlspecialchars($response['username']) ?></span>
+                          <span class="response-username"><a href="profile.php?user_id=<?= $response['user_id'] ?>"><?= htmlspecialchars($response['username']) ?></a></span>
                           <div class="response-content">
                             <p class="response-body <?= (strlen($response['body']) > 200) ? 'collapsible collapsed' : '' ?>"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
                             <?php if (strlen($response['body']) > 200): ?>

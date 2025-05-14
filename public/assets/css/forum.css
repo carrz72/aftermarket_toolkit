@@ -594,6 +594,24 @@ text-align: center;
     border: 2px solid #189dc5;
     border-radius: 4px;
   }
+
+  .pagination .prev,
+  .pagination .next {
+    font-weight: bold;
+  }
+  
+  /* Username links styling */
+  .response-username a, .pro-details a {
+    color: #189dc5;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .response-username a:hover, .pro-details a:hover {
+    color: #0f758e;
+    text-decoration: underline;
+  }
   
   /* ========================================================================
      Value Button Styles (for dropdown)
@@ -905,3 +923,27 @@ text-align: center;
   font-weight: bold;
   transition: background-color 0.3s, transform 0.2s;
 }
+
+.response-username a {
+    color: #189dc5;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .response-username a:hover {
+    color: #0f758e;
+    text-decoration: underline;
+  }
+  
+  .pro-details a {
+    color: #189dc5;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .pro-details a:hover {
+    color: #0f758e;
+    text-decoration: underline;
+  }

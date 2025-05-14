@@ -96,7 +96,7 @@ $current_section = 'market';
                     </button>
                     <button class="value" onclick="window.location.href='../listings/view_listings.php';">My Listings</button>
                     <button class="value" onclick="window.location.href='../../public/saved_listings.php';">Saved Items</button>
-                    <button class="value" onclick="window.location.href='../../public/account.php';">Account Settings</button>
+                    <button class="value" onclick="window.location.href='../../public/friends.php';">Friends</button>
                     <button class="value" onclick="window.location.href='../../public/logout.php';">Logout</button>
                 <?php else: ?>
                     <button class="value" onclick="window.location.href='../../public/login.php';">Login</button>

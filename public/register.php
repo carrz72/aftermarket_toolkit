@@ -45,10 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         // Hash the password (recommended)
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        // Set default profile picture
+        $defaultProfilePic = "/aftermarket_toolkit/uploads/default_profile.jpg";
 
         // Prepare statement to insert the new user into database
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, NOW())");
-        $stmt->bind_param("sss", $username, $email, $hashedPassword);
+        $stmt = $conn->prepare("INSERT INTO users (username, email, password, profile_picture, created_at) VALUES (?, ?, ?, ?, NOW())");
+        $stmt->bind_param("ssss", $username, $email, $hashedPassword, $defaultProfilePic);
         if ($stmt->execute()) {
             // Optionally, you can log the user in immediately after registration
             $_SESSION['user_id'] = $conn->insert_id;

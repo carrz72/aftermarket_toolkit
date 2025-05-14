@@ -157,10 +157,10 @@ $stats = $statsResult->fetch_assoc();
           <a href="./api/listings/listing.php?id=<?= $row['id'] ?>" class="card-link">
             <div class="card">
               <div class="card-header">
-                <img class="user-pic" src="<?= htmlspecialchars(getImageUrl($row['profile_picture']) ?: './public/assets/images/default-user.jpg') ?>" alt="User" />
+                <img class="user-pic" src="<?= htmlspecialchars(getImageUrl($row['profile_picture']) ?: '/aftermarket_toolkit/uploads/default_profile.jpg') ?>" alt="User" />
                 <span class="username"><?= htmlspecialchars($row['username']) ?></span>
               </div>
-              <img class="listing-img" src="<?= htmlspecialchars(getImageUrl($row['image']) ?: './public/assets/images/default-image.jpg') ?>" alt="<?= htmlspecialchars($row['title']) ?>" />
+              <img class="listing-img" src="<?= htmlspecialchars(getImageUrl($row['image']) ?: '/aftermarket_toolkit/uploads/default_profile.jpg') ?>" alt="<?= htmlspecialchars($row['title']) ?>" />
               <div class="card-body">
                 <h3><?= htmlspecialchars($row['title']) ?></h3>
                 <div class="card-meta">
@@ -228,7 +228,7 @@ $stats = $statsResult->fetch_assoc();
                         class="profile-pic" 
                       >
                       <div class="pro-details">
-                        <?= htmlspecialchars($thread['username']) ?><br>
+                        <a href="./public/profile.php?user_id=<?= $thread['user_id'] ?>"><?= htmlspecialchars($thread['username']) ?></a><br>
                         <?= date('M j, Y', strtotime($thread['created_at'])) ?>
                       </div>
                     </div>

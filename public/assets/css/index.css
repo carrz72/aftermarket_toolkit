@@ -1820,3 +1820,16 @@ body.sidebar-active .main-content {
 .forum-link:hover {
   color: #000000;
 }
+
+/* User links styling */
+.pro-details a, .username a {
+  color: #189dc5;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pro-details a:hover, .username a:hover {
+  color: #0f758e;
+  text-decoration: underline;
+}

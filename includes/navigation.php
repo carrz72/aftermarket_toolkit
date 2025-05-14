@@ -75,7 +75,7 @@ if (strpos($current_path, '/public/') !== false || strpos($current_path, '/api/'
         </button>
         <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/view_listings.php';">My Listings</button>
         <button class="value" onclick="window.location.href='<?= $root_path ?>public/saved_listings.php';">Saved Items</button>
-        <button class="value" onclick="window.location.href='<?= $root_path ?>public/account.php';">Account Settings</button>
+        <button class="value" onclick="window.location.href='<?= $root_path ?>public/friends.php';">Friends</button>
         <button class="value" onclick="window.location.href='<?= $root_path ?>public/logout.php';">Logout</button>
       <?php else: ?>
         <button class="value" onclick="window.location.href='<?= $root_path ?>public/login.php';">Login</button>
