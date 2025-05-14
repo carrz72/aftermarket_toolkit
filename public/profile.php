@@ -283,7 +283,7 @@ $forumStmt->close();
                             <?php if (!empty($user['profile_picture'])): ?>
                                 <img src="<?= htmlspecialchars($user['profile_picture']) ?>" alt="Current Profile Picture" class="current-pic">
                             <?php else: ?>
-                                <img src="./assets/images/default-profile.jpg" alt="Default Profile" class="current-pic">
+                                <img src="./assets/images/default_image.jpg" alt="Default Profile" class="current-pic">
                             <?php endif; ?>
                             <input type="file" name="profile_picture" id="profile_picture">
                         </div>

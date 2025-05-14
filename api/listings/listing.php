@@ -337,37 +337,7 @@ function getConditionClass($condition) {
     </style>
 </head>
 <body>
-    <div class="menu">
-        <a href="../../index.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/home-icon.svg" alt="Home">
-            </span>
-            <span class="link-title">Home</span>
-        </a>
-
-        <a href="../../public/marketplace.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/market.svg" alt="Market">
-            </span>
-            <span class="link-title">Market</span>
-        </a>
-        
-        <a href="../../public/forum.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/forum-icon.svg" alt="Forum">
-            </span>
-            <span class="link-title">Forum</span>
-        </a>
-        
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../../public/chat.php" class="link">
-                <span class="link-icon">
-                    <img src="../../public/assets/images/chat-icon.svg" alt="Chat">
-                </span>
-                <span class="link-title">Chat</span>
-            </a>
-        <?php endif; ?>
-    </div>
+    
 
     <div class="listing-container">
         <div class="gallery-container">

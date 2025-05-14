@@ -7,7 +7,9 @@
   
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
+    background-image: url("../images/marketplace_bg5.jpg");
+    background-position: center;
+    background-size: cover;
     color: #333;
     line-height: 1.6;
   }
@@ -42,8 +44,7 @@
     height: 85vh;
     max-width: 1200px;
     margin: 50px auto 20px;
-    border-radius: 12px;
-   
+    border-radius: 90px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     background-color: white;
     margin: 70px 10px;
