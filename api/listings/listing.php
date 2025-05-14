@@ -478,7 +478,7 @@ function getConditionClass($condition) {
             
             <div class="action-buttons">
                 <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== $listing['seller_id']): ?>
-                    <a href="../../public/chat.php?chat=<?= $listing['seller_id'] ?>&listing=<?= $listingId ?>&title=<?= urlencode($listing['title']) ?>" class="btn btn-message">
+                    <a href="../../public/chat.php?chat=<?= $listing['seller_id'] ?>&listing_id=<?= $listingId ?>&listing_title=<?= urlencode($listing['title']) ?>&listing_image=<?= urlencode($listing['image']) ?>" class="btn btn-message">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
                         </svg>

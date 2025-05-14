@@ -62,8 +62,6 @@ function getConditionClass($condition) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Marketplace - Aftermarket Toolbox</title>
   <link rel="stylesheet" href="./assets/css/marketplace.css" />
-  <!-- Add this to ensure dropdown styling works -->
-  <link rel="stylesheet" href="./assets/css/index.css" />
 </head>
 <body>
    

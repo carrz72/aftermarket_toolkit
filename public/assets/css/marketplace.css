@@ -86,12 +86,14 @@ body {
   .link-title {
     display: block;
     text-align: center;
-    font-size: 1.5em;
+    font-size: 1.5em; /* Changed from 1.8em to match the font size used in other pages */
     text-indent: 40px;
     transition: transform 0.2s ease-in;
     transform: translateX(100%);
     transform-origin: center right;
     width: 100%;
+    height: 100%;
+    line-height: 25px; /* Added to vertically center the text */
   }
   
   /* Profile Container Dropdown Styles - Updated to match index.css */
@@ -184,6 +186,91 @@ body {
     height: 15px;
     margin-right: 8px;
   }
+
+  
+/* ========================================================================
+    Menu Item Dropdown Styles
+======================================================================== */
+.menu-item {
+  display: inline-block;
+  position: relative;
+}
+
+.menu-item .dropdown-content {
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 -3px 2px 0 #000;
+  display: none;
+  margin-top: 5px;
+  position: absolute;
+  top: 100%;
+  z-index: 10;
+}
+
+.menu-item:hover .dropdown-content {
+  display: block;
+}
+
+/* ========================================================================
+    Profile Container Dropdown Styles
+======================================================================== */
+.profile-container {
+  display: inline-block;
+  position: relative;
+}
+
+.profile-container .dropdown-content {
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 -3px 2px 0 #000;
+  display: none;
+  margin-top: 5px;
+  padding: 5px;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  z-index: 10;
+}
+
+.profile-container.active .dropdown-content,
+.profile-container:hover .dropdown-content {
+  display: block;
+    background-color: #ffffff;
+}
+
+.profile-container:hover .link {
+  outline: 0;
+  width: 130px;
+}
+
+.profile-container:hover .link:before,
+.profile-container:hover .link .link-title {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Active menu item styling */
+.link.active {
+  outline: 0;
+  width: 130px;
+  background-color: #209cc8;
+}
+
+.link.active:before {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.link.active .link-title {
+  opacity: 1;
+  transform: translateX(0);
+  color: #fff;
+}
+
+.link.active .link-icon img {
+  filter: brightness(1);
+}
+
   
   /* ========================================================================
      Market Header

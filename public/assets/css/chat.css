@@ -529,7 +529,7 @@
 }
 
 .message-box.right .message-listing-preview {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(160, 160, 160, 0.685);
     border-left-color: rgba(255, 255, 255, 0.5);
 }
 

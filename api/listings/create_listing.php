@@ -192,19 +192,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="link-title">Home</span>
         </a>
 
-        <a href="../../public/marketplace.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/market.svg" alt="Market">
-            </span>
-            <span class="link-title">Market</span>
-        </a>
+        <!-- Market dropdown -->
+        <div class="profile-container">
+            <a href="#" class="link active" onclick="toggleDropdown(this, event)">
+                <span class="link-icon">
+                    <img src="../../public/assets/images/market.svg" alt="Market">
+                </span>
+                <span class="link-title">Market</span>
+            </a>
+            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='../../public/marketplace.php?view=explore';">Explore</button>
+                <button class="value" onclick="window.location.href='../listings/view_listings.php';">My Listings</button>
+                <button class="value" onclick="window.location.href='../listings/create_listing.php';">List Item</button>
+                <button class="value" onclick="window.location.href='../../public/saved_listings.php';">Saved Items</button>
+            </div>
+        </div>
         
-        <a href="../../public/forum.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/forum-icon.svg" alt="Forum">
-            </span>
-            <span class="link-title">Forum</span>
-        </a>
+        <!-- Forum dropdown -->
+        <div class="profile-container">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">
+                <span class="link-icon">
+                    <img src="../../public/assets/images/forum-icon.svg" alt="Forum">
+                </span>
+                <span class="link-title">Forum</span>
+            </a>
+            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='../../public/forum.php?view=threads';">View Threads</button>
+                <button class="value" onclick="window.location.href='../../public/forum.php?view=start_thread';">Start Thread</button>
+                <button class="value" onclick="window.location.href='../../public/forum.php?view=post_question';">Ask Question</button>
+            </div>
+        </div>
+        
+        <!-- Profile dropdown -->
+        <div class="profile-container">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">
+                <span class="link-icon">
+                    <img src="../../public/assets/images/profile-icon.svg" alt="Profile">
+                </span>
+                <span class="link-title">Profile</span>
+            </a>
+            <div class="dropdown-content">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <button class="value" onclick="window.location.href='../../public/profile.php';">
+                        <img src="../../public/assets/images/profile-icon.svg" alt="Profile">Account
+                    </button>
+                    <button class="value" onclick="window.location.href='../listings/view_listings.php';">My Listings</button>
+                    <button class="value" onclick="window.location.href='../../public/saved_listings.php';">Saved Items</button>
+                    <button class="value" onclick="window.location.href='../../public/account.php';">Account Settings</button>
+                    <button class="value" onclick="window.location.href='../../public/logout.php';">Logout</button>
+                <?php else: ?>
+                    <button class="value" onclick="window.location.href='../../public/login.php';">Login</button>
+                    <button class="value" onclick="window.location.href='../../public/register.php';">Register</button>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="../../public/chat.php" class="link">
+                <span class="link-icon">
+                    <img src="../../public/assets/images/chat-icon.svg" alt="Chat">
+                </span>
+                <span class="link-title">Chat</span>
+            </a>
+        <?php endif; ?>
     </div>
 
     <div class="create-listing-container">
@@ -375,6 +425,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (file) {
                     reader.readAsDataURL(file);
                     previewContainer.appendChild(preview);
+                }
+            });
+        });
+        
+        // Dropdown menu functionality
+        const delay = 100; // Delay in milliseconds
+        
+        // Apply event listeners to all profile containers
+        document.querySelectorAll('.profile-container').forEach(container => {
+            let timeoutId = null;
+            
+            container.addEventListener('mouseenter', () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                timeoutId = setTimeout(() => {
+                    container.classList.add('active');
+                }, delay);
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                timeoutId = setTimeout(() => {
+                    container.classList.remove('active');
+                }, delay);
+            });
+        });
+        
+        // Toggle dropdown with a delay
+        function toggleDropdown(element, event) {
+            event.preventDefault();
+            const container = element.closest('.profile-container');
+            setTimeout(() => {
+                container.classList.toggle('active');
+            }, delay);
+        }
+        
+        // Close all dropdowns with a delay when clicking outside
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.profile-container').forEach(container => {
+                if (!container.contains(e.target)) {
+                    setTimeout(() => {
+                        container.classList.remove('active');
+                    }, delay);
                 }
             });
         });

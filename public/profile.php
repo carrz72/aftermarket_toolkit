@@ -109,27 +109,59 @@ $forumStmt->close();
             <span class="link-title">Home</span>
         </a>
 
-        <a href="./marketplace.php" class="link">
-            <span class="link-icon">
-                <img src="./assets/images/market.svg" alt="Market">
-            </span>
-            <span class="link-title">Market</span>
-        </a>
-
-        <a href="./forum.php" class="link">
-            <span class="link-icon">
-                <img src="./assets/images/forum-icon.svg" alt="Forum">
-            </span>
-            <span class="link-title">Forum</span>
-        </a>
-        
+        <!-- Market dropdown -->
         <div class="profile-container">
-            <a href="#" class="link active">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">
+                <span class="link-icon">
+                    <img src="./assets/images/market.svg" alt="Market">
+                </span>
+                <span class="link-title">Market</span>
+            </a>
+            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='./marketplace.php?view=explore';">Explore</button>
+                <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
+                <button class="value" onclick="window.location.href='../api/listings/create_listing.php';">List Item</button>
+                <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+            </div>
+        </div>
+
+        <!-- Forum dropdown -->
+        <div class="profile-container">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">
+                <span class="link-icon">
+                    <img src="./assets/images/forum-icon.svg" alt="Forum">
+                </span>
+                <span class="link-title">Forum</span>
+            </a>
+            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='./forum.php?view=threads';">View Threads</button>
+                <button class="value" onclick="window.location.href='./forum.php?view=start_thread';">Start Thread</button>
+                <button class="value" onclick="window.location.href='./forum.php?view=post_question';">Ask Question</button>
+            </div>
+        </div>
+        
+        <!-- Profile dropdown -->
+        <div class="profile-container">
+            <a href="#" class="link active" onclick="toggleDropdown(this, event)">
                 <span class="link-icon">
                     <img src="./assets/images/profile-icon.svg" alt="Profile">
                 </span>
                 <span class="link-title">Profile</span>
             </a>
+            <div class="dropdown-content">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <button class="value" onclick="window.location.href='./profile.php';">
+                        <img src="./assets/images/profile-icon.svg" alt="Profile">Account
+                    </button>
+                    <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
+                    <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+                    <button class="value" onclick="window.location.href='./account.php';">Account Settings</button>
+                    <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
+                <?php else: ?>
+                    <button class="value" onclick="window.location.href='./login.php';">Login</button>
+                    <button class="value" onclick="window.location.href='./register.php';">Register</button>
+                <?php endif; ?>
+            </div>
         </div>
         
         <?php if (isset($_SESSION['user_id'])): ?>
@@ -149,7 +181,7 @@ $forumStmt->close();
                 <?php if (!empty($user['profile_picture'])): ?>
                     <img src="<?= htmlspecialchars($user['profile_picture']) ?>" alt="Profile Picture">
                 <?php else: ?>
-                    <img src="./assets/images/default-profile.jpg" alt="Default Profile">
+                    <img src="./assets/images/default_profile.jpg" alt="Default Profile">
                 <?php endif; ?>
             </div>
             <div class="profile-details">
@@ -250,6 +282,8 @@ $forumStmt->close();
                         <div class="profile-pic-upload">
                             <?php if (!empty($user['profile_picture'])): ?>
                                 <img src="<?= htmlspecialchars($user['profile_picture']) ?>" alt="Current Profile Picture" class="current-pic">
+                            <?php else: ?>
+                                <img src="./assets/images/default-profile.jpg" alt="Default Profile" class="current-pic">
                             <?php endif; ?>
                             <input type="file" name="profile_picture" id="profile_picture">
                         </div>
@@ -288,6 +322,53 @@ $forumStmt->close();
     </div>
 
     <script>
+        const delay = 100; // Delay in milliseconds for dropdown effects
+        
+        // Apply event listeners to all profile containers
+        document.querySelectorAll('.profile-container').forEach(container => {
+            let timeoutId = null;
+            
+            container.addEventListener('mouseenter', () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                timeoutId = setTimeout(() => {
+                    container.classList.add('active');
+                }, delay);
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                timeoutId = setTimeout(() => {
+                    container.classList.remove('active');
+                }, delay);
+            });
+        });
+        
+        // Toggle dropdown with a delay
+        function toggleDropdown(element, event) {
+            event.preventDefault();
+            const container = element.closest('.profile-container');
+            setTimeout(() => {
+                container.classList.toggle('active');
+            }, delay);
+        }
+        
+        // Close all dropdowns with a delay when clicking outside
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.profile-container').forEach(container => {
+                if (!container.contains(e.target)) {
+                    setTimeout(() => {
+                        container.classList.remove('active');
+                    }, delay);
+                }
+            });
+        });
+
         // Tab switching functionality
         document.querySelectorAll('.profile-nav a').forEach(link => {
             link.addEventListener('click', function(e) {

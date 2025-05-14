@@ -305,7 +305,8 @@ footer {
   height: 75px;
 }
 
-/* Card Footer with improved positioning */
+/* Card Footer with improved positioning - keep existing code but update bookmark styles
+======================================================================== */
 .card-footer {
   margin-top: auto;
   padding: 0.75rem 1rem;
@@ -339,38 +340,25 @@ footer {
   width: 24px;
   height: 24px;
   filter: grayscale(100%);
-  transition: filter 0.3s;
+  transition: filter 0.3s, transform 0.2s;
   box-sizing: content-box;
+  vertical-align: middle;
 }
 
-.bookmark.bookmarked img {
-  width: 24px;  /* Same width as non-bookmarked */
-  height: 24px; /* Same height as non-bookmarked */
-  filter: none; /* Ensure the filled icon has no filter */
-}
-
-.bookmark.saved img {
+.bookmark:hover img {
   filter: grayscale(0%);
 }
 
 .bookmark.bookmarked img {
   width: 24px;
   height: 24px;
+  filter: none !important;
 }
 
 /* Add date display */
 .date-added {
   font-size: 0.8rem;
   color: #666;
-}
-
-/* Card Link with improved interaction */
-.card-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  height: 100%;
-  transition: transform 0.2s ease;
 }
 
 /* Responsive adjustments */
@@ -521,6 +509,28 @@ text-align: center;
   transform: translateX(100%);
   transform-origin: center right;
   width: 100%;
+}
+
+/* Active menu item styling */
+.link.active {
+  outline: 0;
+  width: 130px;
+  background-color: #209cc8;
+}
+
+.link.active:before {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.link.active .link-title {
+  opacity: 1;
+  transform: translateX(0);
+  color: #fff;
+}
+
+.link.active .link-icon img {
+  filter: brightness(1);
 }
 
 /* ========================================================================
@@ -704,6 +714,18 @@ text-align: center;
   display: flex;
   align-items: center;
   padding: 1rem;
+  background-color: #189dc5;
+}
+
+.user-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+}
+
+.username {
+  font-weight: bold;
   background-color: #189dc5;
 }
 
@@ -1250,7 +1272,6 @@ body.sidebar-active .main-content {
 
 }
 .forum-container h2 {
-    background-color: #189dc5;
     box-shadow: -4px 6px rgb(5, 5, 5);
     color: #ffffff;
     font-size: 30px;
@@ -1402,9 +1423,52 @@ body.sidebar-active .main-content {
     width: 70%;
       border-radius: 1px;
       margin: 0 auto;
+    /* Adding these for text truncation */
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
   }
 
-.forum-responses{
+  /* New styles for collapsible forum text */
+  .forum-content p.collapsed {
+    max-height: 100px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .forum-content p.expanded {
+    max-height: 1000px; /* Large enough to show all content */
+  }
+
+  .forum-content .fade-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+    pointer-events: none;
+  }
+
+  .see-more-btn {
+    background-color: #189dc5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 5px auto;
+    display: block;
+    transition: all 0.2s ease;
+  }
+
+  .see-more-btn:hover {
+    background-color: #157a9e;
+    transform: translateY(-2px);
+  }
+
+  .forum-responses{
     display: flex;
     flex-direction: column;
     width: fit-content;
@@ -1542,4 +1606,217 @@ body.sidebar-active .main-content {
 
 .bookmark-tooltip.removed:after {
   border-color: #dc3545 transparent transparent transparent;
+}
+
+
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card-link:hover {
+  transform: translateY(-5px);
+}
+
+.card-link:hover .card {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.bookmark {
+  position: relative;
+  z-index: 2;
+}
+
+.welcome-banner {
+  background-color: #f0f8ff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  border-left: 5px solid #189dc5;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.welcome-banner h1 {
+  color: #189dc5;
+  margin-bottom: 10px;
+}
+
+.welcome-banner p {
+  font-size: 1.1em;
+  color: #555;
+  line-height: 1.6;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 1.8em;
+  color: #ffffff;
+  position: relative;
+  margin: 0;
+}
+
+.section-title:after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 3px;
+  background-color: #189dc5;
+  bottom: -8px;
+  left: 0;
+}
+
+.view-all {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.view-all-btn {
+  background-color: #189dc5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-all-btn:hover {
+  background-color: #0f758e;
+  transform: translateY(-2px);
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  text-align: center;
+  background-color: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  min-width: 150px;
+  margin: 10px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.stat-number {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #189dc5;
+  margin: 0;
+}
+
+.stat-label {
+  font-size: 1em;
+  color: #555;
+  margin: 5px 0 0;
+}
+
+.bookmarked img {
+  filter: none !important;
+}
+
+.forum-preview {
+
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.no-items {
+  text-align: center;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  color: #777;
+}
+
+.cta-container {
+  background-color: #e9f7fb;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 40px 0;
+  border: 1px solid #d0ebf3;
+}
+
+.cta-title {
+  font-size: 1.6em;
+  color: #0f758e;
+  margin-bottom: 15px;
+}
+
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.cta-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cta-primary {
+  background-color: #189dc5;
+  color: white;
+}
+
+.cta-secondary {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cta-primary:hover {
+  background-color: #0f758e;
+}
+
+.cta-secondary:hover {
+  background-color: #e0e0e0
+}
+
+.forum-link {
+  display: flex;
+  margin: 10px auto;
+
+  justify-content: center;
+  text-decoration: none;
+  color: #189dc5;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.forum-link:hover {
+  color: #000000;
 }

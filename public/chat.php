@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/image_helper.php';
+require_once __DIR__ . '/../includes/listing_preview_helper.php'; // Add listing preview helper
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -9,6 +11,19 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = $_SESSION['user_id'];
+
+// Check if the user was redirected from a listing page
+$listingId = isset($_GET['listing_id']) ? (int)$_GET['listing_id'] : null;
+$listingTitle = isset($_GET['listing_title']) ? urldecode($_GET['listing_title']) : null;
+$listingImage = isset($_GET['listing_image']) ? $_GET['listing_image'] : null;
+
+// Convert URL-encoded paths to proper file paths
+if ($listingImage) {
+    $listingImage = urldecode($listingImage);
+}
+
+// Debug the listing parameters - remove in production
+error_log("Debug - Listing ID: $listingId, Title: $listingTitle, Image: $listingImage");
 
 $listingsQuery = "
     SELECT id, title, price, image 
@@ -28,9 +43,9 @@ while ($listing = $listingsResult->fetch_assoc()) {
 }
 
 // Get the current view (all or listings)
-$view = isset($_GET['view']) ? $_GET['view'] : 'all';
+$view = 'all'; // Removed view selection, default to showing all messages
 
-// Modify your contactsQuery based on view
+// Modify contactsQuery to show all conversations (removed filtering for listing-related messages)
 $contactsQuery = "
     SELECT DISTINCT 
         u.id, 
@@ -64,14 +79,6 @@ $contactsQuery = "
     FROM users u
     JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
     WHERE (m.sender_id = ? OR m.receiver_id = ?) AND u.id != ? 
-";
-
-// Filter for listing-related messages
-if ($view === 'listings') {
-    $contactsQuery .= " AND m.message LIKE '%[LISTING_ID:%' ";
-}
-
-$contactsQuery .= "
     GROUP BY u.id
     ORDER BY last_message_time DESC
 ";
@@ -130,6 +137,51 @@ if (empty($contacts)) {
     }
 }
 
+// Get active chat ID from URL or default to first contact
+$activeChatId = isset($_GET['chat']) ? (int)$_GET['chat'] : ($contacts[0]['id'] ?? 0);
+
+// If we have a chat ID from the URL but no existing conversation with that user,
+// create a virtual contact entry. This happens when clicking "Message Seller" from a listing
+if ($activeChatId > 0) {
+    $found = false;
+    foreach ($contacts as $contact) {
+        if ($contact['id'] === $activeChatId) {
+            $found = true;
+            break;
+        }
+    }
+    
+    // Only create virtual contact if no existing conversation with this user
+    if (!$found) {
+        // Get the seller information
+        $sellerQuery = "SELECT id, username, profile_picture FROM users WHERE id = ?";
+        $sellerStmt = $conn->prepare($sellerQuery);
+        $sellerStmt->bind_param("i", $activeChatId);
+        $sellerStmt->execute();
+        $sellerResult = $sellerStmt->get_result();
+        
+        if ($sellerRow = $sellerResult->fetch_assoc()) {
+            $contacts[] = [
+                'id' => $sellerRow['id'],
+                'name' => $sellerRow['username'],
+                'profile_picture' => $sellerRow['profile_picture'],
+                'last_message' => '',
+                'time' => 'Now',
+                'unread' => 0
+            ];
+        }
+    }
+}
+
+// Find the active contact
+$activeContact = null;
+foreach ($contacts as $contact) {
+    if ($contact['id'] === $activeChatId) {
+        $activeContact = $contact;
+        break;
+    }
+}
+
 // Fetch messages for the active chat
 $messages = [];
 if ($activeContact) {
@@ -145,11 +197,12 @@ if ($activeContact) {
     
     // Get all messages between these two users
     $messagesQuery = "
-        SELECT * FROM messages
+        SELECT m.*, m.listing_id 
+        FROM messages m
         WHERE 
-            (sender_id = ? AND receiver_id = ?) OR
-            (sender_id = ? AND receiver_id = ?)
-        ORDER BY sent_at ASC
+            (m.sender_id = ? AND m.receiver_id = ?) OR
+            (m.sender_id = ? AND m.receiver_id = ?)
+        ORDER BY m.sent_at ASC
     ";
     $messagesStmt = $conn->prepare($messagesQuery);
     $messagesStmt->bind_param("iiii", $userId, $activeChatId, $activeChatId, $userId);
@@ -164,6 +217,7 @@ if ($activeContact) {
             'id' => $message['id'],
             'sender_id' => $message['sender_id'],
             'message' => $message['message'],
+            'listing_id' => $message['listing_id'],
             'time' => $timeFormatted,
             'is_read' => $message['is_read']
         ];
@@ -172,8 +226,7 @@ if ($activeContact) {
     // If no messages found, provide some placeholder data for UI testing
     if (empty($messages)) {
         $messages = [
-            ['id' => 1, 'sender_id' => $activeChatId, 'message' => 'Hello, How are you?', 'time' => '10:30 AM', 'is_read' => 1],
-            ['id' => 2, 'sender_id' => $userId, 'message' => "I'm good, thanks for asking! How about you?", 'time' => '10:31 AM', 'is_read' => 1],
+
         ];
     }
 }
@@ -207,6 +260,80 @@ if ($activeContact) {
             width: 48px;
             height: 48px;
         }
+        
+        /* Listing preview styles */
+        .listing-preview-container {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            position: relative;
+        }
+        
+        .listing-preview {
+            display: flex;
+            padding: 10px;
+        }
+        
+        .listing-preview-image {
+            width: 60px;
+            height: 60px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .listing-preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .listing-preview-info {
+            flex-grow: 1;
+            position: relative;
+        }
+        
+        .listing-preview-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .listing-preview-view {
+            font-size: 12px;
+            color: #189dc5;
+            text-decoration: none;
+        }
+        
+        .listing-preview-view:hover {
+            text-decoration: underline;
+        }
+        
+        .remove-listing-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            padding: 2px;
+        }
+        
+        .remove-listing-btn:hover {
+            color: #555;
+        }
+        
+        /* Message listing preview */
+        .message-listing-preview {
+            background-color: #f0f2f5;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 5px;
+            border-left: 3px solid #189dc5;
+        }
     </style>
 </head>
 <body>
@@ -219,37 +346,16 @@ if ($activeContact) {
     
     <div class="chat-container">
         <div class="contacts-sidebar">
-        <div class="contacts-header">
-    <div class="conversations-title-container">
-        <div class="conversations-dropdown">
-            <h2 id="conversationsDropdownBtn">
-                <?php 
-                if (isset($_GET['view']) && $_GET['view'] === 'listings') {
-                    echo 'Listing Conversations';
-                } else {
-                    echo 'Conversations';
-                }
-                ?>
-                <svg class="icon dropdown-arrow" viewBox="0 0 24 24">
-                    <path d="M7 10l5 5 5-5z"/>
-                </svg>
-            </h2>
-            <div class="conversations-dropdown-content" id="conversationsDropdown">
-                <a href="?view=all<?= isset($_GET['chat']) ? '&chat=' . htmlspecialchars($_GET['chat']) : '' ?>" class="dropdown-item<?= (!isset($_GET['view']) || $_GET['view'] === 'all') ? ' active' : '' ?>">
-                    Conversations
-                </a>
-                <a href="?view=listings<?= isset($_GET['chat']) ? '&chat=' . htmlspecialchars($_GET['chat']) : '' ?>" class="dropdown-item<?= (isset($_GET['view']) && $_GET['view'] === 'listings') ? ' active' : '' ?>">
-                    Listing Conversations
-                </a>
+            <div class="contacts-header">
+                <div class="conversations-title">
+                    <h2>Conversations</h2>
+                </div>
+                <button class="new-chat-btn" onclick="location.href='start_conversation.php';">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                </button>
             </div>
-        </div>
-    </div>
-    <button class="new-chat-btn" onclick="location.href='start_conversation.php';">
-        <svg class="icon" viewBox="0 0 24 24">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-    </button>
-</div>
             <div class="search-container">
                 <input type="text" placeholder="Search contacts..." class="search-input" id="contact-search">
                 <svg class="icon search-icon" viewBox="0 0 24 24">
@@ -322,14 +428,42 @@ if ($activeContact) {
                 <div class="chat-body">
                     <div class="messages-container">
     <?php foreach ($messages as $message): 
-        // Check if message contains listing information
-        $hasListing = preg_match('/\[LISTING_ID:(\d+)\]/', $message['message'], $listingMatches);
-        $listingId = $hasListing ? $listingMatches[1] : null;
-        
-        // Extract listing title if available
+        // Extract listing information using the listing_id field or from the message text
+        $listingId = null;
         $listingTitle = '';
-        if ($hasListing && preg_match('/\[LISTING_TITLE:([^\]]+)\]/', $message['message'], $titleMatches)) {
-            $listingTitle = $titleMatches[1];
+        
+        // Check if message has listing_id in database field
+        if (!empty($message['listing_id'])) {
+            $listingId = $message['listing_id'];
+            
+            // Fetch listing title from database
+            $listingQuery = "SELECT title FROM listings WHERE id = ?";
+            $listingStmt = $conn->prepare($listingQuery);
+            $listingStmt->bind_param('i', $listingId);
+            $listingStmt->execute();
+            $listingResult = $listingStmt->get_result();
+            if ($listingRow = $listingResult->fetch_assoc()) {
+                $listingTitle = $listingRow['title'];
+            }
+        } 
+        // If not in database field, extract from message text as fallback
+        else if (preg_match('/\[LISTING_ID:(\d+)\]/', $message['message'], $listingMatches)) {
+            $listingId = $listingMatches[1];
+            
+            // Extract listing title if available
+            if (preg_match('/\[LISTING_TITLE:([^\]]+)\]/', $message['message'], $titleMatches)) {
+                $listingTitle = $titleMatches[1];
+            } else {
+                // Try to get title from database as fallback
+                $listingQuery = "SELECT title FROM listings WHERE id = ?";
+                $listingStmt = $conn->prepare($listingQuery);
+                $listingStmt->bind_param('i', $listingId);
+                $listingStmt->execute();
+                $listingResult = $listingStmt->get_result();
+                if ($listingRow = $listingResult->fetch_assoc()) {
+                    $listingTitle = $listingRow['title'];
+                }
+            }
         }
         
         // Clean up message text by removing listing markers
@@ -340,10 +474,10 @@ if ($activeContact) {
                 <p><?= htmlspecialchars($displayMessage) ?></p>
             </div>
             
-            <?php if ($hasListing): ?>
+            <?php if ($listingId && $listingTitle): ?>
             <div class="message-listing-preview">
                 <div class="listing-preview-title"><?= htmlspecialchars($listingTitle) ?></div>
-                <a href="marketplace_item.php?id=<?= $listingId ?>" class="listing-preview-view">View listing</a>
+                <a href="../api/listings/listing.php?id=<?= $listingId ?>" class="listing-preview-view">View listing</a>
             </div>
             <?php endif; ?>
             
@@ -364,12 +498,35 @@ if ($activeContact) {
 </div>
 
                     <div class="message-input">
-                        <button class="attachment-button">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
-                            </svg>
-                        </button>
-                        <textarea placeholder="Type your message here" class="message-send"></textarea>
+                        <?php if (isset($_GET['listing_id']) && isset($_GET['listing_title'])): ?>
+                        <div class="listing-preview-container">
+                            <div class="listing-preview">
+                                <?php if (isset($_GET['listing_image'])): ?>
+                                <div class="listing-preview-image">
+                                    <img src="<?= htmlspecialchars(urldecode($_GET['listing_image'])) ?>" 
+                                         alt="<?= htmlspecialchars(urldecode($_GET['listing_title'])) ?>">
+                                </div>
+                                <?php endif; ?>
+                                <div class="listing-preview-info">
+                                    <div class="listing-preview-title"><?= htmlspecialchars(urldecode($_GET['listing_title'])) ?></div>
+                                    <a href="../api/listings/listing.php?id=<?= $_GET['listing_id'] ?>" class="listing-preview-view">View listing</a>
+                                    <button type="button" class="remove-listing-btn" onclick="removeListingPreview()">
+                                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="attached-listing-id" value="<?= $_GET['listing_id'] ?>">
+                            <input type="hidden" id="attached-listing-title" value="<?= htmlspecialchars(urldecode($_GET['listing_title'])) ?>">
+                        </div>
+                        <?php endif; ?>
+                        <textarea placeholder="Type your message here" class="message-send"><?php 
+                            if (isset($_GET['listing_id']) && isset($_GET['listing_title'])) {
+                                $title = htmlspecialchars(urldecode($_GET['listing_title']));
+                                echo "Hi, I'm interested in your listing \"$title\". Is it still available?";
+                            }
+                        ?></textarea>
                         <button type="submit" class="button-send">
                             <svg class="icon" viewBox="0 0 24 24">
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
@@ -420,6 +577,20 @@ if ($activeContact) {
         }
     };
 
+    // Function to remove listing preview
+    function removeListingPreview() {
+        const container = document.querySelector('.listing-preview-container');
+        if (container) {
+            container.remove();
+            
+            // Also clear any pre-filled message text
+            const messageInput = document.querySelector('.message-send');
+            if (messageInput && messageInput.value.includes('interested in your listing')) {
+                messageInput.value = '';
+            }
+        }
+    }
+
     // Handle message sending
     document.querySelector('.button-send')?.addEventListener('click', function(e) {
         e.preventDefault();
@@ -444,6 +615,7 @@ if ($activeContact) {
             const timeString = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
             
             // Check if message contains a listing reference
+            const listingContainer = document.querySelector('.listing-preview-container');
             const listingRef = document.querySelector('#attached-listing-id')?.value;
             const listingTitle = document.querySelector('#attached-listing-title')?.value;
             
@@ -453,13 +625,15 @@ if ($activeContact) {
                 </div>
             `;
             
-            // If we have an attached listing, add it to the message
+            // Prepare message with listing tags if we have a listing reference
+            let messageText = message;
             if (listingRef && listingTitle) {
-                message += ` [LISTING_ID:${listingRef}][LISTING_TITLE:${listingTitle}]`;
+                // Add listing tags at the end of the message
+                messageText = `${message} [LISTING_ID:${listingRef}][LISTING_TITLE:${listingTitle}]`;
                 messageHTML += `
                     <div class="message-listing-preview">
                         <div class="listing-preview-title">${listingTitle}</div>
-                        <a href="marketplace_item.php?id=${listingRef}" class="listing-preview-view">View listing</a>
+                        <a href="../api/listings/listing.php?id=${listingRef}" class="listing-preview-view">View listing</a>
                     </div>
                 `;
             }
@@ -481,12 +655,20 @@ if ($activeContact) {
             messagesContainer.appendChild(newMessage);
             messageInput.value = '';
             
+            // Remove the listing preview after sending
+            if (listingRef) {
+                const previewContainer = document.querySelector('.listing-preview-container');
+                if (previewContainer) {
+                    previewContainer.remove();
+                }
+            }
+            
             // Scroll to bottom
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
             // Send message to server via AJAX
             const formData = new FormData();
-            formData.append('message', message);
+            formData.append('message', messageText);
             formData.append('receiver_id', contactId);
             
             fetch('send_message.php', {
@@ -513,45 +695,6 @@ if ($activeContact) {
             });
         }
     }
-
-    // Conversations dropdown functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const dropdownBtn = document.getElementById('conversationsDropdownBtn');
-        const dropdownContainer = document.querySelector('.conversations-dropdown');
-        
-        if (dropdownBtn && dropdownContainer) {
-            // Force reset to non-active state on load
-            dropdownContainer.classList.remove('active');
-            
-            // Toggle dropdown on button click
-            dropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                dropdownContainer.classList.toggle('active');
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!dropdownContainer.contains(e.target) && e.target !== dropdownBtn) {
-                    dropdownContainer.classList.remove('active');
-                }
-            });
-            
-            // Preserve the chat parameter when switching views
-            const chatParam = new URLSearchParams(window.location.search).get('chat');
-            if (chatParam) {
-                document.querySelectorAll('.conversations-dropdown-content a').forEach(link => {
-                    if (!link.href.includes('chat=')) {
-                        if (link.href.includes('?')) {
-                            link.href += '&chat=' + chatParam;
-                        } else {
-                            link.href += '?chat=' + chatParam;
-                        }
-                    }
-                });
-            }
-        }
-    });
 </script>
 
 </body>

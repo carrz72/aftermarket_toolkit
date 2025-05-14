@@ -425,13 +425,13 @@ text-align: center;
   .forum-response {
     margin: 0 10px 10px 0;
     display: flex;
-    align-items: center;
-    text-align: center;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
     padding: 13px;
     background-color: #f1f1f1;
     color: rgb(0, 0, 0);
     border-radius: 5px;
+    position: relative;
   }
   
   .response-profile-pic {
@@ -445,9 +445,69 @@ text-align: center;
     margin-right: 10px;
   }
   
+  .response-content {
+    position: relative;
+    width: 100%;
+  }
+  
   .response-body {
     font-size: 0.9em;
     margin: 0;
+    padding: 5px;
+    width: 100%;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .response-body.collapsed {
+    max-height: 80px;
+  }
+
+  .response-body.expanded {
+    max-height: 1000px;
+  }
+
+  .fade-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .response-gradient {
+    background: transparent;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    pointer-events: none;
+  }
+
+  .see-more-btn {
+    background-color: #189dc5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    display: block;
+  }
+
+  .see-more-btn:hover {
+    background-color: #157a9e;
+    transform: translateY(-1px);
+  }
+
+  .response-body.collapsed .response-gradient {
+    display: block;
   }
 
   /* Response button and form styles */
@@ -714,4 +774,134 @@ text-align: center;
     display: block;
     margin-top: 5px;
     font-size: 12px;
+}
+
+/* ========================================================================
+   Menu & Profile Container Dropdown Styles - Updated to match index.css
+======================================================================== */
+.profile-container {
+  display: inline-block;
+  position: relative;
+}
+
+.profile-container .dropdown-content {
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 -3px 2px 0 #000;
+  display: none;
+  margin-top: 5px;
+  padding: 5px;
+  position: absolute;
+  top: 100%;
+  width: fit-content;
+  min-width: 160px;
+  z-index: 10;
+}
+
+.profile-container.active .dropdown-content,
+.profile-container:hover .dropdown-content {
+  display: block;
+  background-color: #ffffff;
+}
+
+.profile-container:hover .link {
+  outline: 0;
+  width: 130px;
+}
+
+.profile-container:hover .link:before,
+.profile-container:hover .link .link-title {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Value Button Styles - Updated to match index.css */
+.dropdown-content .value {
+  border: none;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  position: relative;
+  background-color: transparent;
+  border-radius: 4px;
+  width: 100%;
+  border-bottom: 1px solid #189dc5;
+  text-align: left;
+  align-items: center;
+  font-size: 16px;
+}
+
+.dropdown-content .value:not(:active):hover,
+.dropdown-content .value:focus {
+  background-color: #189dc5;
+  width: 100%;
+  color: white;
+}
+
+.dropdown-content .value:active,
+.dropdown-content .value:focus {
+  background-color: #1a1f24a1;
+  outline: none;
+}
+
+.dropdown-content .value::before {
+  background-color: #2F81F7;
+  border-radius: 5px;
+  content: "";
+  height: 80%;
+  left: -10px;
+  opacity: 0;
+  position: absolute;
+  top: 5px;
+  width: 5px;
+}
+
+.dropdown-content .value:active::before,
+.dropdown-content .value:focus::before {
+  opacity: 1;
+}
+
+.dropdown-content .value img {
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+}
+
+/* Link active state styling */
+.link.active:before {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.link.active {
+  outline: 0;
+  width: 130px;
+}
+
+.link.active .link-title {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.alert-success{
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+
+.see-all-responses-btn {
+  background-color: #189dc5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
 }

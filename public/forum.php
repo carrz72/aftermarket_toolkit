@@ -112,36 +112,69 @@ $result = $stmt->get_result();
     <span class="link-title">Home</span>
   </a>
 
-  <a href="../public/marketplace.php" class="link">
-    <span class="link-icon">
-      <img src="../public/assets/images/market.svg" alt="">
-    </span>
-    <span class="link-title">Market</span>
-  </a>
-
-  <a href="forum.php" class="link">
-    <span class="link-icon">
-      <img src="./assets/images/forum-icon.svg" alt="Forum">
-    </span>
-    <span class="link-title">Forum</span>
-  </a>
+  <!-- Market with dropdown -->
   <div class="profile-container">
-    <a href="#" class="link" onclick="toggleProfileDropdown(event)">
+    <a href="#" class="link" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./assets/images/market.svg" alt="Market">
+      </span>
+      <span class="link-title">Market</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./marketplace.php?view=explore';">Explore</button>
+      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">View Listings</button>
+      <button class="value" onclick="window.location.href='../api/listings/create_listing.php';">List Item</button>
+      <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+    </div>
+  </div>
+  
+  <!-- Forum dropdown -->
+  <div class="profile-container">
+    <a href="#" class="link active" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./assets/images/forum-icon.svg" alt="Forum">
+      </span>
+      <span class="link-title">Forum</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./forum.php?view=threads';">View Threads</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=start_thread';">Start Thread</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=post_question';">Post Question</button>
+    </div>
+  </div>
+
+  <!-- Profile dropdown -->
+  <div class="profile-container">
+    <a href="#" class="link" onclick="toggleDropdown(this, event)">
       <span class="link-icon">
         <img src="./assets/images/profile-icon.svg" alt="Profile">
       </span>
       <span class="link-title">Profile</span>
     </a>
     <div id="profileDropdown" class="dropdown-content">
-      <?php if (isset($_SESSION['user_id'])): ?>
-        <a href="profile.php">My Profile</a>
-        <a href="logout.php">Logout</a>
-      <?php else: ?>
-        <a href="login.php">Login</a>
-        <a href="register.php">Register</a>
-      <?php endif; ?>
+    <?php if (isset($_SESSION['user_id'])): ?>
+      <button class="value" onclick="window.location.href='./profile.php';">
+        <img src="./assets/images/profile-icon.svg" alt="Profile">Account
+      </button>
+      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
+      <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+      <button class="value" onclick="window.location.href='./account.php';">Account Settings</button>
+      <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
+    <?php else: ?>
+      <button class="value" onclick="window.location.href='./login.php';">Login</button>
+      <button class="value" onclick="window.location.href='./register.php';">Register</button>
+    <?php endif; ?>
     </div>
   </div>
+
+  <?php if (isset($_SESSION['user_id'])): ?>
+    <a href="./chat.php" class="link">
+      <span class="link-icon">
+        <img src="./assets/images/chat-icon.svg" alt="Chat">
+      </span>
+      <span class="link-title">Chat</span>
+    </a>
+  <?php endif; ?>
 </div>
 
 <!-- Forum Section -->
@@ -152,7 +185,7 @@ $result = $stmt->get_result();
       <div class="container">
         <!-- Display success/error messages -->
         <?php if (isset($_SESSION['success'])): ?>
-          <div class="alert alert-success">
+          <div class="alert-success">
             <?= htmlspecialchars($_SESSION['success']) ?>
             <?php unset($_SESSION['success']); ?>
           </div>
@@ -194,7 +227,7 @@ $result = $stmt->get_result();
                 $thread_id = $row['id'];
                 $profile_pic = !empty($row['profile_pic'])
                   ? $row['profile_pic']
-                  : '/aftermarket_toolbox/uploads/default_profile.jpg';
+                  : '../assets/images/default_profile.jpg';
           ?>
           <div class="forumcard">
             <div class="card-body">
@@ -243,20 +276,38 @@ $result = $stmt->get_result();
                     $res_result = $stmt_res->get_result();
                     
                     if ($res_result && $res_result->num_rows > 0):
-                      while ($response = $res_result->fetch_assoc()):
+                      $responses_array = array();
+                      $response_count = $res_result->num_rows;
+                      
+                      // Store all responses in an array
+                      while ($response = $res_result->fetch_assoc()) {
+                        $responses_array[] = $response;
+                      }
+                      
+                      // Only display the first 3 responses initially
+                      $display_count = min(3, count($responses_array));
+                      
+                      for ($i = 0; $i < $display_count; $i++):
+                        $response = $responses_array[$i];
                         $response_pic = !empty($response['response_profile_pic'])
                           ? $response['response_profile_pic']
-                          : '/aftermarket_toolbox/uploads/default_profile.jpg';
+                          : './assets/images/default_profile.jpg';
                 ?>
                 <div class="forum-response">
                   <img src="<?= htmlspecialchars($response_pic) ?>" 
                        alt="<?= htmlspecialchars($response['username']) ?>" 
                        class="response-profile-pic" width="30" height="30">
                   <span class="response-username"><?= htmlspecialchars($response['username']) ?></span>
-                  <p class="response-body"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
+                  <div class="response-content">
+                    <p class="response-body <?= (strlen($response['body']) > 200) ? 'collapsible collapsed' : '' ?>"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
+                    <?php if (strlen($response['body']) > 200): ?>
+                      <div class="fade-overlay"></div>
+                      <button class="see-more-btn" onclick="toggleResponseText(this)">See more</button>
+                    <?php endif; ?>
+                  </div>
                   
                   <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $response['user_id']): ?>
-                    <form method="POST" action="../api/forum_threads/delete_response.php" class="delete-response-form" onsubmit="return confirm('Are you sure you want to delete this response?');">
+                    <form method="POST" action="../api/forum_threads/delete_response.php" class="delete-response-form">
                       <input type="hidden" name="response_id" value="<?= $response['id'] ?>">
                       <input type="hidden" name="thread_id" value="<?= $thread_id ?>">
                       <button type="submit" class="delete-response-btn">
@@ -268,7 +319,53 @@ $result = $stmt->get_result();
                   <?php endif; ?>
                 </div>
                 <?php 
-                      endwhile;
+                      endfor;
+                      
+                      // If there are more than 3 responses, add the hidden responses and a "See All" button
+                      if (count($responses_array) > 3):
+                ?>
+                      <div class="see-all-container">
+                        <button type="button" class="see-all-responses-btn" onclick="toggleRemainingResponses(this, '<?= $thread_id ?>')">
+                          See All (<?= $response_count - 3 ?>) More Responses
+                        </button>
+                      </div>
+                      
+                      <div id="remaining-responses-<?= $thread_id ?>" class="remaining-responses" style="display: none;">
+                        <?php for ($i = 3; $i < count($responses_array); $i++):
+                          $response = $responses_array[$i];
+                          $response_pic = !empty($response['response_profile_pic'])
+                            ? $response['response_profile_pic']
+                            : './assets/images/default_profile.jpg';
+                        ?>
+                        <div class="forum-response">
+                          <img src="<?= htmlspecialchars($response_pic) ?>" 
+                               alt="<?= htmlspecialchars($response['username']) ?>" 
+                               class="response-profile-pic" width="30" height="30">
+                          <span class="response-username"><?= htmlspecialchars($response['username']) ?></span>
+                          <div class="response-content">
+                            <p class="response-body <?= (strlen($response['body']) > 200) ? 'collapsible collapsed' : '' ?>"><?= nl2br(htmlspecialchars($response['body'])) ?></p>
+                            <?php if (strlen($response['body']) > 200): ?>
+                              <div class="fade-overlay"></div>
+                              <button class="see-more-btn" onclick="toggleResponseText(this)">See more</button>
+                            <?php endif; ?>
+                          </div>
+                          
+                          <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $response['user_id']): ?>
+                            <form method="POST" action="../api/forum_threads/delete_response.php" class="delete-response-form">
+                              <input type="hidden" name="response_id" value="<?= $response['id'] ?>">
+                              <input type="hidden" name="thread_id" value="<?= $thread_id ?>">
+                              <button type="submit" class="delete-response-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                              </button>
+                            </form>
+                          <?php endif; ?>
+                        </div>
+                        <?php endfor; ?>
+                      </div>
+                <?php
+                      endif;
                     else:
                       echo "<p class='no-responses'>No responses yet.</p>";
                     endif;
@@ -313,29 +410,92 @@ $result = $stmt->get_result();
 
 <!-- Profile Dropdown JS -->
 <script>
-  function toggleProfileDropdown(event) {
-    event.preventDefault();
-    const profileContainer = document.querySelector('.profile-container');
-    profileContainer.classList.toggle('active');
-  }
-  
-  document.addEventListener('click', function(e) {
-    const profileContainer = document.querySelector('.profile-container');
-    if (!profileContainer.contains(e.target)) {
-      profileContainer.classList.remove('active');
-    }
-  });
-  
-  window.addEventListener('blur', function() {
-    document.querySelector('.profile-container').classList.remove('active');
+  const delay = 100; // Delay in milliseconds
+
+  // Apply event listeners to all profile containers
+  document.querySelectorAll('.profile-container').forEach(container => {
+    let timeoutId = null;
+
+    container.addEventListener('mouseenter', () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      timeoutId = setTimeout(() => {
+        container.classList.add('active');
+      }, delay);
+    });
+
+    container.addEventListener('mouseleave', () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      timeoutId = setTimeout(() => {
+        container.classList.remove('active');
+      }, delay);
+    });
   });
 
+  // Toggle dropdown with a delay
+  function toggleDropdown(element, event) {
+    event.preventDefault();
+    const container = element.closest('.profile-container');
+    setTimeout(() => {
+      container.classList.toggle('active');
+    }, delay);
+  }
+
+  // Close all dropdowns with a delay when clicking outside
+  document.addEventListener('click', function(e) {
+    document.querySelectorAll('.profile-container').forEach(container => {
+      if (!container.contains(e.target)) {
+        setTimeout(() => {
+          container.classList.remove('active');
+        }, delay);
+      }
+    });
+  });
+  
+  // Toggle response form visibility
   function toggleResponseForm(formId) {
     const form = document.getElementById(formId);
-    if (form.style.display === "none" || !form.style.display) {
-      form.style.display = "block";
+    if (form.style.display === 'none') {
+      form.style.display = 'block';
     } else {
-      form.style.display = "none";
+      form.style.display = 'none';
+    }
+  }
+
+  // Toggle remaining responses visibility
+  function toggleRemainingResponses(button, threadId) {
+    const remainingResponses = document.getElementById('remaining-responses-' + threadId);
+    if (remainingResponses.style.display === 'none') {
+      remainingResponses.style.display = 'block';
+      button.textContent = 'Hide Responses';
+    } else {
+      remainingResponses.style.display = 'none';
+      button.textContent = 'See All Responses';
+    }
+  }
+  
+  // Toggle response text expansion
+  function toggleResponseText(button) {
+    const responseBody = button.closest('.response-content').querySelector('.response-body');
+    const fadeOverlay = button.closest('.response-content').querySelector('.fade-overlay');
+    
+    if (responseBody.classList.contains('collapsed')) {
+      // Expand
+      responseBody.classList.remove('collapsed');
+      responseBody.classList.add('expanded');
+      fadeOverlay.style.display = 'none';
+      button.textContent = 'See less';
+    } else {
+      // Collapse
+      responseBody.classList.add('collapsed');
+      responseBody.classList.remove('expanded');
+      fadeOverlay.style.display = 'block';
+      button.textContent = 'See more';
     }
   }
 </script>

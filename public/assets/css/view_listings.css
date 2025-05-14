@@ -1,309 +1,498 @@
+/* ========================================================================
+   View Listings Page Styles
+======================================================================== */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+  background-image: url("../images/marketplace_bg5.jpg");
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
 }
 
-.listings-container {
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.listings-container h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 28px;
-}
-
-.listings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.listing-card {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.listing-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.listing-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-}
-
-.listing-info {
-    padding: 15px;
-}
-
-.listing-info h2 {
-    font-size: 18px;
-    margin: 0 0 10px;
-    color: #333;
-}
-
-.listing-info p {
-    font-size: 14px;
-    color: #555;
-    margin: 5px 0;
-}
-
-.listing-info .price {
-    font-weight: bold;
-    color: #189dc5;
-    margin-top: 10px;
-}
-
-.listing-info .date {
-    font-size: 12px;
-    color: #888;
-    margin-top: 5px;
-}
-
-.actions {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-}
-
-.actions .btn {
-    padding: 8px 12px;
-    text-decoration: none;
-    color: white;
-    border-radius: 4px;
-    font-size: 14px;
-    text-align: center;
-    transition: background-color 0.3s ease;
-}
-
-.actions .btn.edit {
-    background-color: #28a745;
-}
-
-.actions .btn.edit:hover {
-    background-color: #218838;
-}
-
-.actions .btn.delete {
-    background-color: #dc3545;
-}
-
-.actions .btn.delete:hover {
-    background-color: #c82333;
-}
-
-.no-listings {
-    text-align: center;
-    font-size: 16px;
-    color: #555;
-    margin-top: 20px;
-}
-
-.no-listings a {
-    color: #189dc5;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.no-listings a:hover {
-    text-decoration: underline;
-}
-
-/* Menu styling (consistent with other pages) */
+/* ========================================================================
+   Menu & Navigation - consistent with other pages
+======================================================================== */
 .menu {
-    background-color: white;
-    box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.541);
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    text-align: center;
-    margin: 10px;
-    padding: 0.8rem;
-    position: relative;
-    border-radius: 15px;
+  background-color: white;
+  box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.541);
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  text-align: center;
+  margin: 10px;
+  padding: 0.8rem;
+  position: relative;
+  border-radius: 15px;
+  z-index: 100;
 }
 
 .link {
-    color: white;
-    display: inline-flex;
-    overflow: hidden;
-    position: relative;
-    text-decoration: none;
-    transform-origin: center left;
-    transition: width 0.2s ease-in;
-    width: 70px;
-    height: 30px;
-    border-radius: 8px;
-    z-index: 1;
-    padding: 5px;
+  color: white;
+  display: inline-flex;
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  transform-origin: center left;
+  transition: width 0.2s ease-in;
+  width: 70px;
+  height: 30px;
+  border-radius: 8px;
+  z-index: 1;
+  padding: 5px;
 }
 
 .link:before {
-    background-color: #189dc5;
-    border-radius: 8px;
-    content: "";
-    display: block;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    transform: translateX(100%);
-    transform-origin: center right;
-    transition: transform 0.2s ease-in;
-    width: 100%;
-    z-index: -1;
+  background-color: #189dc5;
+  border-radius: 8px;
+  content: "";
+  display: block;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(-100%);
+  transform-origin: center right;
+  transition: transform 0.2s ease-in;
+  width: 100%;
+  z-index: -1;
 }
 
-.link:hover:before {
-    transform: translateX(0);
+.link:hover,
+.link:focus,
+.link.active {
+  outline: 0;
+  width: 130px;
+}
+
+.link:hover:before,
+.link:focus:before,
+.link.active:before,
+.link:hover .link-title,
+.link:focus .link-title,
+.link.active .link-title {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .link-icon {
-    display: block;
-    flex-shrink: 0;
-    height: 48px;
-    left: 18px;
-    position: absolute;
-    width: 28px;
+  display: block;
+  flex-shrink: 0;
+  height: 48px;
+  left: 18px;
+  position: absolute;
+  width: 28px;
 }
 
 .link-icon img {
-    height: 30px;
-    width: 30px;
+  height: 30px;
+  width: 30px;
 }
 
 .link-title {
-    opacity: 0;
-    transform: translateX(30px);
-    transition: opacity 0.2s ease-in, transform 0.2s ease-in;
-    width: 100%;
+  display: block;
+  text-align: center;
+  font-size: 1.5em;
+  text-indent: 40px;
+  transition: transform 0.2s ease-in;
+  transform: translateX(100%);
+  transform-origin: center right;
+  width: 100%;
+  height: 100%;
+  line-height: 25px; /* Added to vertically center the text */
 }
 
-.link:hover .link-title {
-    opacity: 1;
-    transform: translateX(0);
+
+/* Active menu item styling */
+.link.active {
+  outline: 0;
+  width: 130px;
+  background-color: #209cc8;
 }
 
-/* Improve listing actions */
-.listing-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    gap: 10px;
+.link.active:before {
+  transform: translateX(0);
+  opacity: 1;
 }
 
-.edit-btn, .delete-btn {
-    padding: 8px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    text-align: center;
-    flex: 1;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: white;
-    display: inline-block;
+.link.active .link-title {
+  opacity: 1;
+  transform: translateX(0);
+  color: #fff;
 }
 
-.edit-btn {
-    background-color: #189dc5;
-    color: white;
+.link.active .link-icon img {
+  filter: brightness(1);
 }
 
-.delete-btn {
-    background-color: #dc3545;
-    color: white;
+/* Profile Container Dropdown Styles */
+.profile-container {
+  display: inline-block;
+  position: relative;
 }
 
-.edit-btn:hover, .delete-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+.profile-container .dropdown-content {
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 -3px 2px 0 #000;
+  display: none;
+  margin-top: 5px;
+  padding: 5px;
+  position: absolute;
+  top: 100%;
+  width: fit-content;
+  min-width: 160px;
+  z-index: 10;
 }
 
-.edit-btn:hover {
-    background-color: #157a9e;
+.profile-container.active .dropdown-content,
+.profile-container:hover .dropdown-content {
+  display: block;
+  background-color: #ffffff;
 }
 
-.delete-btn:hover {
-    background-color: #c82333;
+.profile-container:hover .link {
+  outline: 0;
+  width: 130px;
 }
 
-/* Create button styling */
-.create-btn {
-    display: inline-block;
-    background-color: #189dc5;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 25px;
-    transition: all 0.3s ease;
-    box-shadow: -3px 3px #000000;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    font-size: 16px;
+.profile-container:hover .link:before,
+.profile-container:hover .link .link-title {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-.create-btn:hover {
-    background-color: #157a9e;
-    transform: translateY(-3px);
-    box-shadow: -4px 6px #000000;
+/* Value Button Styles */
+.dropdown-content .value {
+  border: none;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  position: relative;
+  background-color: transparent;
+  border-radius: 4px;
+  width: 100%;
+  border-bottom: 1px solid #189dc5;
+  text-align: left;
+  align-items: center;
+  font-size: 16px;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-.create-btn:active {
-    transform: translateY(1px);
-    box-shadow: -2px 2px #000000;
+.dropdown-content .value:not(:active):hover,
+.dropdown-content .value:focus {
+  background-color: #189dc5;
+  width: 100%;
+  color: white;
+}
+
+.dropdown-content .value:active,
+.dropdown-content .value:focus {
+  background-color: #1a1f24a1;
+  outline: none;
+}
+
+.dropdown-content .value::before {
+  background-color: #2F81F7;
+  border-radius: 5px;
+  content: "";
+  height: 80%;
+  left: -10px;
+  opacity: 0;
+  position: absolute;
+  top: 5px;
+  width: 5px;
+  transition: opacity 0.2s;
+}
+
+.dropdown-content .value:active::before,
+.dropdown-content .value:focus::before {
+  opacity: 1;
+}
+
+.dropdown-content .value img {
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+}
+
+/* ========================================================================
+   Main Container & Page Header - Enhanced
+======================================================================== */
+.listings-container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.listings-container h1 {
+  background-color: #189dc5;
+  color: #ffffff;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0px 6px rgb(5, 5, 5);
+  font-size: 24px;
+  margin-bottom: 25px;
+  text-align: center;
 }
 
 .create-listing {
-    text-align: center;
-    margin: 0 0 30px 0;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
 }
 
-/* Improve responsiveness */
+.create-btn {
+  background-color: #189dc5;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.create-btn:hover {
+  background-color: #157a9e;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.create-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.notification-content {
+  background-color: #fff;
+  color: #333;
+  border-radius: 8px;
+  padding: 15px 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.notification.success .notification-content {
+  border-left: 4px solid #28a745;
+}
+
+.notification.error .notification-content {
+  border-left: 4px solid #dc3545;
+}
+
+.notification button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #777;
+  margin-left: 10px;
+}
+
+/* ========================================================================
+   Listings Grid
+======================================================================== */
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.listing-card {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.listing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.listing-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.listing-info {
+  padding: 15px;
+}
+
+.listing-info h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 18px;
+  background-color: #189dc5;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.listing-category {
+  color: #666;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+
+.listing-price {
+  color: #189dc5;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin: 8px 0;
+}
+
+.listing-date {
+  color: #888;
+  font-size: 0.8em;
+  margin-bottom: 15px;
+}
+
+.listing-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.edit-btn, .delete-btn {
+  padding: 8px 0;
+  text-align: center;
+  border-radius: 5px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.edit-btn {
+  background-color: #28a745;
+}
+
+.edit-btn:hover {
+  background-color: #218838;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* ========================================================================
+   Empty State Styling
+======================================================================== */
+.no-listings {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  margin: 40px auto;
+  max-width: 600px;
+}
+
+.no-listings p:first-child {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.no-listings p:last-child {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* ========================================================================
+   Responsive Styles
+======================================================================== */
 @media (max-width: 768px) {
-    .listings-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-    
-    .menu {
-        flex-wrap: wrap;
-    }
+  .listings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .listings-container h1 {
+    font-size: 20px;
+    padding: 12px 20px;
+  }
+  
+  .create-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .menu {
+    padding: 0.5rem;
+    gap: 5px;
+  }
+  
+  .link {
+    width: 50px;
+  }
+  
+  .link:hover, .link:focus {
+    width: 110px;
+  }
 }
 
 @media (max-width: 480px) {
-    .listings-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .listing-actions {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .edit-btn, .delete-btn {
-        margin: 0;
-        width: 100%;
-    }
-    
-    .listings-container h1 {
-        font-size: 24px;
-    }
+  .listings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .listings-container {
+    padding: 15px;
+  }
+  
+  .listing-image {
+    height: 180px;
+  }
+  
+  .dropdown-content {
+    min-width: 140px;
+    right: 0;
+  }
 }

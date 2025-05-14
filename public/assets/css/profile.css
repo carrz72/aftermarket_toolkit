@@ -93,6 +93,122 @@ body {
     width: 100%;
 }
 
+/* Active menu item styling */
+.link.active {
+    outline: 0;
+    width: 130px;
+    background-color: #209cc8;
+}
+
+.link.active:before {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.link.active .link-title {
+    opacity: 1;
+    transform: translateX(0);
+    color: #fff;
+}
+
+.link.active .link-icon img {
+    filter: brightness(1);
+}
+
+/* Profile Container Dropdown Styles */
+.profile-container {
+    display: inline-block;
+    position: relative;
+}
+
+.profile-container .dropdown-content {
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 -3px 2px 0 #000;
+    display: none;
+    margin-top: 5px;
+    padding: 5px;
+    position: absolute;
+    top: 100%;
+    width: fit-content;
+    min-width: 160px;
+    z-index: 10;
+}
+
+.profile-container.active .dropdown-content,
+.profile-container:hover .dropdown-content {
+    display: block;
+    background-color: #ffffff;
+}
+
+.profile-container:hover .link {
+    outline: 0;
+    width: 130px;
+}
+
+.profile-container:hover .link:before,
+.profile-container:hover .link .link-title {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Value Button Styles */
+.dropdown-content .value {
+    border: none;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    position: relative;
+    background-color: transparent;
+    border-radius: 4px;
+    width: 100%;
+    border-bottom: 1px solid #189dc5;
+    text-align: left;
+    align-items: center;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.dropdown-content .value:not(:active):hover,
+.dropdown-content .value:focus {
+    background-color: #189dc5;
+    width: 100%;
+    color: white;
+}
+
+.dropdown-content .value:active,
+.dropdown-content .value:focus {
+    background-color: #1a1f24a1;
+    outline: none;
+}
+
+.dropdown-content .value::before {
+    background-color: #2F81F7;
+    border-radius: 5px;
+    content: "";
+    height: 80%;
+    left: -10px;
+    opacity: 0;
+    position: absolute;
+    top: 5px;
+    width: 5px;
+    transition: opacity 0.2s;
+}
+
+.dropdown-content .value:active::before,
+.dropdown-content .value:focus::before {
+    opacity: 1;
+}
+
+.dropdown-content .value img {
+    width: 15px;
+    height: 15px;
+    margin-right: 8px;
+}
+
 /* Profile Header */
 .profile-header {
     width: 100%;
@@ -137,14 +253,14 @@ body {
 
 .profile-details h1 {
     margin: 0;
-    color: #fff;
+    color: #000000;
     font-size: 2.5rem;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .username {
     margin: 5px 0;
-    color: #e6e6e6;
+    color: #000000;
     font-size: 1.1rem;
 }
 
@@ -152,7 +268,7 @@ body {
     display: flex;
     align-items: center;
     margin: 5px 0;
-    color: #fff;
+    color: #000000;
     font-size: 1rem;
 }
 
@@ -163,7 +279,7 @@ body {
 
 .member-since {
     margin: 5px 0;
-    color: #e6e6e6;
+    color: #000000;
     font-size: 0.9rem;
 }
 
