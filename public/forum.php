@@ -8,7 +8,6 @@ $filter_category = $_GET['category'] ?? '';
 
 // Build the WHERE clause dynamically
 $where = "WHERE 1=1";
-$types = "";
 $params = [];
 
 if (!empty($search)) {
@@ -228,7 +227,7 @@ if ($thread_view && isset($_SESSION['user_id'])) {
         <!-- Thread creation form (only for logged-in users) -->
         <?php if (isset($_SESSION['user_id'])): ?>
             <div class="create-thread-section">
-            <a href="create_forum.php" class="btn btn-primary">Post a Thread</a>
+            <a href="create_forum.php" class="btn btn-post">Post a Thread</a>
             </div>
         <?php else: ?>
           <p class="login-in">Please <a href="login.php">log in</a> to post a thread.</p>

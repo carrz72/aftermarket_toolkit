@@ -272,28 +272,30 @@ function countUnreadNotifications($conn, $userId) {
     } catch (Exception $e) {
         error_log("Error counting friend requests: " . $e->getMessage());
     }
-    
-    // Count unread forum responses
+      // Count unread forum responses ONLY from the notifications table to avoid duplicates
     try {
-        $forumQuery = "
-            SELECT COUNT(*) AS count 
-            FROM forum_replies r
-            JOIN forum_threads t ON r.thread_id = t.id
-            WHERE t.user_id = ? AND r.user_id != ? AND r.is_read = 0";
-        $forumStmt = $conn->prepare($forumQuery);
-        $forumStmt->bind_param("ii", $userId, $userId);
-        $forumStmt->execute();
-        $result = $forumStmt->get_result();
-        if ($row = $result->fetch_assoc()) {
-            $counts['forum_response'] = (int)$row['count'];
-            $counts['total'] += $counts['forum_response'];
+        $checkTableSql = "SHOW TABLES LIKE 'notifications'";
+        $result = $conn->query($checkTableSql);
+        if ($result->num_rows > 0) {
+            $forumQuery = "
+                SELECT COUNT(*) AS count 
+                FROM notifications
+                WHERE user_id = ? AND type = 'forum_response' AND is_read = 0";
+            $forumStmt = $conn->prepare($forumQuery);
+            $forumStmt->bind_param("i", $userId);
+            $forumStmt->execute();
+            $result = $forumStmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                $counts['forum_response'] = (int)$row['count'];
+                $counts['total'] += $counts['forum_response'];
+            }
         }
     } catch (Exception $e) {
         error_log("Error counting forum responses: " . $e->getMessage());
     }
     
     // Check notifications table for any additional notifications
-    // But for message type, we'll rely on the messages table count to avoid duplicates
+    // But avoid double-counting types we've already counted
     try {
         $checkTableSql = "SHOW TABLES LIKE 'notifications'";
         $result = $conn->query($checkTableSql);
@@ -301,7 +303,7 @@ function countUnreadNotifications($conn, $userId) {
             $sql = "
                 SELECT type, COUNT(*) as count
                 FROM notifications
-                WHERE user_id = ? AND is_read = 0 AND type != 'message'
+                WHERE user_id = ? AND is_read = 0 AND type NOT IN ('message', 'forum_response')
                 GROUP BY type
             ";
             

@@ -41,8 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['thread_id'], $_POST['
         
         if ($stmt->execute()) {
             $response_id = $stmt->insert_id;
-            
-            // Create notification for thread author (if responder is not the author)
+              // Create notification for thread author (if responder is not the author)
             if ($user_id != $threadAuthorId) {
                 // Get thread title for notification content
                 $threadTitleSql = "SELECT title FROM forum_threads WHERE id = ?";
@@ -56,23 +55,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['thread_id'], $_POST['
                 // Create notification content
                 $notificationContent = "New reply to your thread: " . $threadTitle;
                 
-                // Create notification
-                createNotification($conn, $threadAuthorId, 'forum_response', $response_id, $notificationContent);
+                // Load notification handler if not already loaded
+                require_once __DIR__ . '/../../includes/notification_handler.php';
+                
+                // Only create one notification using sendNotification (modern method)
+                // We're removing the old createNotification call to avoid duplicates
+                sendNotification(
+                  $conn,
+                  $threadAuthorId,
+                  'forum_response',
+                  $user_id,
+                  $response_id,
+                  $notificationContent
+                );
             }
-            
-            // New code block
-            $replyId      = $conn->insert_id;
-            $threadOwner  = $threadAuthorId;
-            $currentUser  = $_SESSION['user_id'];
-
-            require_once __DIR__ . '/../../includes/notification_handler.php';
-            sendNotification(
-              $conn,
-              $threadOwner,
-              'forum_response',
-              $currentUser,
-              $replyId
-            );
             
             $_SESSION['success'] = "Your response has been posted.";
             header('Location: ../../public/forum.php?thread=' . $thread_id);

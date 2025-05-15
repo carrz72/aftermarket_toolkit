@@ -34,21 +34,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $checkFriendResult = $checkFriendStmt->get_result();
                 
                 if ($checkResult->num_rows === 0 && $checkFriendResult->num_rows === 0) {
-                    $requestStmt = $conn->prepare("INSERT INTO friend_requests (sender_id, receiver_id, created_at) VALUES (?, ?, NOW())");
-                    $requestStmt->bind_param("ii", $userId, $friendId);
+                    $requestStmt = $conn->prepare("INSERT INTO friend_requests (sender_id, receiver_id, created_at) VALUES (?, ?, NOW())");                    $requestStmt->bind_param("ii", $userId, $friendId);
                     if ($requestStmt->execute()) {
                         // grab the new request ID
                         $newRequestId = $conn->insert_id;
-
-                        // fire the notification
-                        require_once __DIR__ . '/../../includes/notification_handler.php';
-                        sendNotification(
-                          $conn,
-                          $friendId,          // recipient
-                          'friend_request',   // type
-                          $userId,            // sender
-                          $newRequestId       // related_id
-                        );
+                          // fire the notification
+                        require_once __DIR__ . '/../includes/notification_handler.php';
+                        try {
+                            // Make sure the notification function exists
+                            if (function_exists('sendNotification')) {
+                                sendNotification(
+                                  $conn,
+                                  $friendId,          // recipient
+                                  'friend_request',   // type
+                                  $userId,            // sender
+                                  $newRequestId,      // related_id
+                                  '',                 // content (empty = auto-generate)
+                                  '/aftermarket_toolkit/public/friends.php'  // link to friends page
+                                );
+                            } else {
+                                // Log error if function doesn't exist
+                                error_log("sendNotification function not found");
+                            }
+                        } catch (Exception $e) {
+                            error_log("Failed to send friend request notification: " . $e->getMessage());
+                            // Continue even if notification fails - thefriend request was still created
+                        }
 
                         $message = "Friend request sent successfully.";
                     } else {
@@ -63,7 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
             case 'accept':
                 // Verify that request exists
-                $checkStmt = $conn->prepare("SELECT * FROM friend_requests WHERE sender_id = ? AND receiver_id = ?");
+                $checkStmt = $conn->prepare("SELECT * FRO
+                M friend_requests WHERE sender_id = ? AND receiver_id = ?");
                 $checkStmt->bind_param("ii", $friendId, $userId);
                 $checkStmt->execute();
                 
@@ -196,6 +208,9 @@ function getFriendStats($conn, $friendId) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Friends - Aftermarket Toolbox</title>
     <link rel="stylesheet" href="./assets/css/forum.css">
+    <link rel="stylesheet" href="./assets/css/notifications.css">
+    <!-- Add Font Awesome for notification icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .friends-container {
             max-width: 1000px;
@@ -455,11 +470,42 @@ function getFriendStats($conn, $friendId) {
       </span>
       <span class="link-title">Chat</span>
     </a>
+    
+    <!-- Notifications Dropdown -->
+    <div class="notifications-container">
+      <button id="notificationsBtn" class="notification-btn">
+        <i class="fas fa-bell"></i>
+        <?php 
+          // Get notification counts - use existing function if available
+          $notificationCounts = [];
+          if (function_exists('countUnreadNotifications')) {
+              $notificationCounts = countUnreadNotifications($conn, $_SESSION['user_id']);
+          } else if (function_exists('getNotificationCounts')) {
+              $notificationCounts = getNotificationCounts($_SESSION['user_id'], $conn);
+          }
+          
+          if (!empty($notificationCounts) && isset($notificationCounts['total']) && $notificationCounts['total'] > 0): 
+        ?>
+        <span id="notification-badge"><?= $notificationCounts['total'] ?></span>
+        <?php endif; ?>
+      </button>
+      <div id="notificationsDropdown" class="notifications-dropdown">
+        <div class="notifications-header">
+          <h3>Notifications</h3>
+          <?php if (!empty($notificationCounts) && isset($notificationCounts['total']) && $notificationCounts['total'] > 0): ?>
+          <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+          <?php endif; ?>
+        </div>
+        <div class="notifications-list">
+          <div class="no-notifications">Loading notifications...</div>
+        </div>
+      </div>
+    </div>
   <?php endif; ?>
 </div>
 
 <div class="friends-container">
-    <h1>Friends</h1>
+    <h1 class="friends-h1">Friends</h1>
     
     <?php if (!empty($message)): ?>
         <div class="message-box <?= strpos($message, 'Error') !== false ? 'error-box' : '' ?>">
@@ -684,6 +730,243 @@ function getFriendStats($conn, $friendId) {
       }
     });
   });
+  
+  // Initialize notification system if notifications button exists
+  if (document.getElementById('notificationsBtn')) {
+    initNotificationSystem();
+    // Initial fetch
+    fetchNotifications();
+    // Poll for notifications every 60 seconds
+    setInterval(fetchNotifications, 60000);
+  }
+  
+  // Fetch notifications via AJAX
+  function fetchNotifications() {
+    const baseUrl = window.location.pathname.includes('/public/') ? '..' : '/aftermarket_toolkit';
+    
+    fetch(`${baseUrl}/public/api/notifications.php`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          updateNotificationBadge(data.counts.total || 0);
+          updateNotificationDropdown(data.notifications || []);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching notifications:', error);
+      });
+  }
+  
+  // Update the notification badge count
+  function updateNotificationBadge(count) {
+    const badge = document.getElementById('notification-badge');
+    
+    if (!badge) return;
+    
+    if (count > 0) {
+      badge.style.display = 'inline-flex';
+      badge.textContent = count;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  
+  // Update the notification dropdown content
+  function updateNotificationDropdown(notifications) {
+    const list = document.querySelector('.notifications-list');
+    
+    if (!list) return;
+    
+    // If no notifications, show a message
+    if (!notifications || notifications.length === 0) {
+      list.innerHTML = '<div class="no-notifications">No new notifications</div>';
+      return;
+    }
+    
+    let html = '';
+    const maxToShow = 5;
+    
+    // Build notification items HTML
+    for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
+      const notification = notifications[i];
+      const isUnread = !notification.is_read;
+      const unreadClass = isUnread ? 'unread' : '';
+      
+      html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
+      
+      // Notification icon based on type
+      let iconClass = 'fa-bell';
+      switch (notification.type) {
+        case 'friend_request': iconClass = 'fa-user-plus'; break;
+        case 'message': iconClass = 'fa-envelope'; break;
+        case 'forum_response': iconClass = 'fa-comments'; break;
+        case 'listing_comment': iconClass = 'fa-tag'; break;
+      }
+      
+      html += `<div class="notification-icon"><i class="fas ${iconClass}"></i></div>`;
+      html += '<div class="notification-content">';
+      html += `<div class="notification-text">${notification.content}</div>`;
+      html += `<div class="notification-time">${formatTimeAgo(notification.created_at)}</div>`;
+      html += '</div>';
+      
+      if (isUnread) {
+        html += '<div class="notification-mark-read"><i class="fas fa-check"></i></div>';
+      }
+      
+      html += `<a href="${getNotificationLink(notification.type, notification.related_id)}" class="notification-link"></a>`;
+      html += '</div>';
+    }
+    
+    // If there are more notifications than we're showing, add a "view all" link
+    if (notifications.length > maxToShow) {
+      const baseUrl = window.location.pathname.includes('/public/') ? '.' : './public';
+      html += '<div class="notification-item show-all">';
+      html += `<a href="${baseUrl}/notifications.php">View all notifications</a>`;
+      html += '</div>';
+    }
+    
+    list.innerHTML = html;
+  }
+  
+  // Get the appropriate link for a notification
+  function getNotificationLink(type, relatedId) {
+    const baseUrl = window.location.pathname.includes('/public/') ? '.' : './public';
+    
+    switch(type) {
+      case 'friend_request':
+        return `${baseUrl}/friends.php`;
+      case 'message':
+        return `${baseUrl}/chat.php?chat=${relatedId}`;
+      case 'forum_response':
+        return relatedId ? `${baseUrl}/forum.php?thread=${relatedId}` : `${baseUrl}/forum.php`;
+      case 'listing_comment':
+        return relatedId ? `${baseUrl}/marketplace.php?listing=${relatedId}` : `${baseUrl}/marketplace.php`;
+      default:
+        return `${baseUrl}/notifications.php`;
+    }
+  }
+  
+  // Format timestamp as "time ago" text
+  function formatTimeAgo(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) {
+      return 'just now';
+    }
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+      return minutes + ' minute' + (minutes !== 1 ? 's' : '') + ' ago';
+    }
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      return hours + ' hour' + (hours !== 1 ? 's' : '') + ' ago';
+    }
+    
+    const days = Math.floor(hours / 24);
+    if (days < 30) {
+      return days + ' day' + (days !== 1 ? 's' : '') + ' ago';
+    }
+    
+    const months = Math.floor(days / 30);
+    if (months < 12) {
+      return months + ' month' + (months !== 1 ? 's' : '') + ' ago';
+    }
+    
+    return Math.floor(months / 12) + ' year' + (Math.floor(months / 12) !== 1 ? 's' : '') + ' ago';
+  }
+  
+  // Initialize notification system
+  function initNotificationSystem() {
+    const notificationsBtn = document.getElementById('notificationsBtn');
+    const notificationsDropdown = document.getElementById('notificationsDropdown');
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    
+    // Toggle dropdown when clicking on the notification button
+    if (notificationsBtn) {
+      notificationsBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        notificationsDropdown.classList.toggle('show');
+        
+        // Fetch fresh notifications when opening dropdown
+        if (notificationsDropdown.classList.contains('show')) {
+          fetchNotifications();
+        }
+      });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (notificationsDropdown && 
+          !notificationsBtn.contains(e.target) && 
+          !notificationsDropdown.contains(e.target)) {
+        notificationsDropdown.classList.remove('show');
+      }
+    });
+    
+    // Mark all notifications as read
+    if (markAllReadBtn) {
+      markAllReadBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        fetch('/aftermarket_toolkit/public/api/notifications.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'action=mark_all_read'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update UI
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+              item.classList.remove('unread');
+            });
+            document.querySelectorAll('.notification-mark-read').forEach(btn => {
+              btn.remove();
+            });
+            updateNotificationBadge(0);
+          }
+        })
+        .catch(error => console.error('Error marking all as read:', error));
+      });
+    }
+    
+    // Handle notification item clicks
+    document.addEventListener('click', function(e) {
+      // Mark individual notification as read
+      const markReadBtn = e.target.closest('.notification-mark-read');
+      if (markReadBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const notificationItem = markReadBtn.closest('.notification-item');
+        const notificationId = notificationItem.dataset.id;
+        
+        fetch('/aftermarket_toolkit/public/api/notifications.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=mark_read&notification_id=${notificationId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            notificationItem.classList.remove('unread');
+            markReadBtn.remove();
+          }
+        })
+        .catch(error => console.error('Error marking as read:', error));
+      }
+    });
+  }
 </script>
 </body>
 </html>

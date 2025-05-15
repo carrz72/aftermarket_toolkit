@@ -2,7 +2,9 @@
    Base Styles
 ======================================================================== */
 body {
-    background-color: #6b6b6b;
+ background-image: url("../images/marketplace_bg5.jpg");
+  background-position: center;
+  background-size: cover;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -377,6 +379,7 @@ body {
     justify-content: space-between;
     text-align: center;
     align-items: center;
+    min-width: 600px;
   }
   
  .card-title {
@@ -438,6 +441,9 @@ text-align: center;
     border-radius: 50%;
     margin-right: 10px;
     flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
   }
   
   .response-username {
@@ -714,7 +720,7 @@ text-align: center;
   margin: 20px 0;
 }
 
-.btn-primary {
+.btn-post {
   display: inline-block;
   background-color: #189dc5;
   color: white;
@@ -729,13 +735,13 @@ text-align: center;
   cursor: pointer;
 }
 
-.btn-primary:hover {
+.btn-post:hover {
   background-color: #157a9e;
   transform: translateY(-3px);
   box-shadow: -4px 6px #000000;
 }
 
-.btn-primary:active {
+.btn-post:active {
   transform: translateY(1px);
   box-shadow: -2px 2px #000000;
 }
@@ -753,7 +759,7 @@ text-align: center;
     width: 100%;
   }
   
-  .btn-primary {
+  .btn-post {
     display: block;
     width: 80%;
     margin: 0 auto;
@@ -946,4 +952,17 @@ text-align: center;
   .pro-details a:hover {
     color: #0f758e;
     text-decoration: underline;
+  }
+
+  .friends-h1{
+    background-color: #189dc5;
+    box-shadow: -4px 6px rgb(5, 5, 5);
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: bold;
+    margin: 20px auto;
+    padding: 15px;
+    text-align: center;
+    width: 50%;
+      border-radius: 10px;
   }

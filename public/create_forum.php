@@ -18,9 +18,8 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
 <div class="forum-container">
-    <h2>Post a New Thread</h2>
-    <div id="error-messages" style="color: red;"></div>
-    <form id="create-thread-form">
+    <h2>Post a New Thread</h2>    <div id="error-messages" style="color: red;"></div>
+    <form id="create-thread-form" method="POST">
     <label for="category">Category:</label><br>
         <select id="category" name="category" required>
             <option value="">Select a Category</option>
@@ -53,24 +52,17 @@ document.getElementById('create-thread-form').addEventListener('submit', functio
     if (!title || !category || !content) {
         document.getElementById('error-messages').innerText = 'Title, category, and content are required.';
         return;
-    }
-
-    fetch('/api/forum_threads/create.php', {
+    }    fetch('../api/forum_threads/create_thread.php', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
-            user_id: userId,
-            title: title,
-            category: category,
-            content: content,
-        }),
+        body: `title=${encodeURIComponent(title)}&category=${encodeURIComponent(category)}&body=${encodeURIComponent(content)}`
     })
         .then(response => response.json())
         .then(data => {
-            if (data.message === 'Thread Created') {
-                window.location.href = 'forum.php';
+            if (data.success) {
+                window.location.href = 'forum.php?thread=' + data.thread_id;
             } else {
                 document.getElementById('error-messages').innerText = data.message || 'Failed to post the thread.';
             }

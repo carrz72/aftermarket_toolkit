@@ -6,8 +6,6 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  max-width: 1200px;
-  margin: auto;
 }
 
 /* ========================================================================
@@ -32,7 +30,7 @@ body {
   flex-direction: column;
   justify-content: center;
   padding: 20px;
-  max-width: 1200px;
+
 }
 
 .content {
@@ -440,11 +438,12 @@ footer {
   gap: 10px;
   justify-content: center;
 text-align: center;
-  margin: 10px;
+  margin: 10px auto;
   padding: 0.8rem;
   position: relative;
   border-radius: 15px;
-  max-width: 1200px;
+  width: 100%;
+  max-width: 90%;
 }
 
 .link {
@@ -674,6 +673,7 @@ text-align: center;
   margin-top: 10px;
   padding: 10px;
   width: 100%;
+  max-width: 1700px;
 }
 
 .marketplace h1 {
@@ -695,6 +695,7 @@ text-align: center;
   gap: 20px;
   width: 90%;
   margin: 0 auto;
+  max-width: 1500px;
 }
 
 .card {
@@ -978,6 +979,7 @@ text-align: center;
   padding: 10px;
   width: 90%;
 border-radius: 10px;
+max-width: 1200px;
 }
 
 .sub-card {
@@ -1271,8 +1273,7 @@ body.sidebar-active .main-content {
 .forum-container{
   display: flex;
     flex-direction: column;
-    text-align: start;
-    align-items: start;
+    text-align: start; 
     justify-content: center;
 
 }
@@ -1644,6 +1645,7 @@ body.sidebar-active .main-content {
   text-align: center;
   border-left: 5px solid #189dc5;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  width: 90%;
 }
 
 .welcome-banner h1 {

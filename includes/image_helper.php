@@ -139,7 +139,45 @@ function getUploadDirectory($directory = '') {
  * @return string Valid profile picture URL
  */
 function getProfilePicture($profilePic) {
-    return getValidImageUrl($profilePic, '/aftermarket_toolkit/public/assets/images/default-profile.jpg');
+    // First check if it's already a full URL
+    if (filter_var($profilePic, FILTER_VALIDATE_URL)) {
+        return $profilePic;
+    }
+    
+    // If empty, return default immediately
+    if (empty($profilePic)) {
+        return '/aftermarket_toolkit/public/assets/images/default-profile.jpg';
+    }
+    
+    // Fix common path issues
+    if (strpos($profilePic, './') === 0) {
+        $profilePic = substr($profilePic, 2);
+    }
+    
+    if (strpos($profilePic, '/') !== 0 && strpos($profilePic, 'http') !== 0) {
+        $profilePic = '/' . $profilePic;
+    }
+    
+    // Ensure proper path formatting for aftermarket_toolkit paths
+    if (strpos($profilePic, 'aftermarket_toolkit') !== false && strpos($profilePic, '/aftermarket_toolkit') !== 0) {
+        $profilePic = '/' . substr($profilePic, strpos($profilePic, 'aftermarket_toolkit'));
+    }
+    
+    // Special handling for upload paths
+    if (strpos($profilePic, 'uploads') !== false && strpos($profilePic, '/aftermarket_toolkit') === false) {
+        $profilePic = '/aftermarket_toolkit/uploads/' . basename($profilePic);
+    }
+    
+    error_log("Processed profile picture path: " . $profilePic);
+    
+    // Try to determine if the file exists locally
+    $localPath = getImageFilePath($profilePic);
+    if (file_exists($localPath)) {
+        return getImageUrl($profilePic);
+    }
+    
+    // Return default image if profile picture doesn't exist
+    return '/aftermarket_toolkit/public/assets/images/default-profile.jpg';
 }
 
 /**
