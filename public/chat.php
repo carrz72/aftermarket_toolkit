@@ -665,11 +665,11 @@ if ($activeContact) {
             
             // Scroll to bottom
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            // Send message to server via AJAX
+              // Send message to server via AJAX
             const formData = new FormData();
             formData.append('message', messageText);
             formData.append('receiver_id', contactId);
+            formData.append('from_chat_page', '1');  // Flag to prevent duplicate notifications
             
             fetch('send_message.php', {
                 method: 'POST',

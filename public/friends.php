@@ -37,6 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $requestStmt = $conn->prepare("INSERT INTO friend_requests (sender_id, receiver_id, created_at) VALUES (?, ?, NOW())");
                     $requestStmt->bind_param("ii", $userId, $friendId);
                     if ($requestStmt->execute()) {
+                        // grab the new request ID
+                        $newRequestId = $conn->insert_id;
+
+                        // fire the notification
+                        require_once __DIR__ . '/../../includes/notification_handler.php';
+                        sendNotification(
+                          $conn,
+                          $friendId,          // recipient
+                          'friend_request',   // type
+                          $userId,            // sender
+                          $newRequestId       // related_id
+                        );
+
                         $message = "Friend request sent successfully.";
                     } else {
                         $message = "Error sending friend request.";

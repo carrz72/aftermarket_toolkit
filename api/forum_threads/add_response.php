@@ -1,69 +1,96 @@
 <?php
-// filepath: c:\xampp\htdocs\aftermarket_toolkit\api\forum_threads\add_response.php
 session_start();
-require_once __DIR__ . '/../../config/db.php';
+require_once '../../config/db.php';
+require_once '../../includes/image_helper.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    $_SESSION['error'] = "You must be logged in to post a response.";
+    $_SESSION['error'] = "You need to be logged in to reply to threads.";
     header('Location: ../../public/login.php');
-    exit();
+    exit;
 }
 
 // Check if form was submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = $_SESSION['user_id'];
-    $threadId = isset($_POST['thread_id']) ? (int)$_POST['thread_id'] : 0;
-    $responseBody = trim($_POST['response_body'] ?? '');
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['thread_id'], $_POST['response_body'])) {
+    // Sanitize inputs
+    $thread_id = filter_var($_POST['thread_id'], FILTER_SANITIZE_NUMBER_INT);
+    $response_body = trim($_POST['response_body']);
+    $user_id = $_SESSION['user_id'];
     
-    // Validate input
-    $errors = [];
-    
-    if (empty($threadId)) {
-        $errors[] = "Invalid thread.";
+    // Basic validation
+    if (empty($response_body)) {
+        $_SESSION['error'] = "Response cannot be empty.";
+        header('Location: ../../public/forum.php?thread=' . $thread_id);
+        exit;
     }
     
-    if (empty($responseBody)) {
-        $errors[] = "Response cannot be empty.";
-    }
+    // Get thread author (to check if reply is from thread author)
+    $getThreadAuthorSql = "SELECT user_id FROM forum_threads WHERE id = ?";
+    $authorStmt = $conn->prepare($getThreadAuthorSql);
+    $authorStmt->bind_param("i", $thread_id);
+    $authorStmt->execute();
+    $authorResult = $authorStmt->get_result();
     
-    // If there are errors, redirect back with error message
-    if (!empty($errors)) {
-        $_SESSION['error'] = implode(' ', $errors);
-        header('Location: ../../public/forum.php');
-        exit();
-    }
-    
-    // Verify thread exists
-    $checkThread = $conn->prepare("SELECT id FROM forum_threads WHERE id = ?");
-    $checkThread->bind_param("i", $threadId);
-    $checkThread->execute();
-    $threadResult = $checkThread->get_result();
-    
-    if ($threadResult->num_rows === 0) {
-        $_SESSION['error'] = "The thread you are trying to respond to does not exist.";
-        header('Location: ../../public/forum.php');
-        exit();
-    }
-    
-    // Insert response into database
-    $stmt = $conn->prepare("INSERT INTO forum_replies (thread_id, user_id, body, created_at) VALUES (?, ?, ?, NOW())");
-    $stmt->bind_param("iis", $threadId, $userId, $responseBody);
-    
-    if ($stmt->execute()) {
-    
-        $_SESSION['success'] = "Your response has been posted.";
+    if ($authorResult && $authorRow = $authorResult->fetch_assoc()) {
+        $threadAuthorId = $authorRow['user_id'];
+        
+        // Insert response into database
+        $sql = "INSERT INTO forum_replies (thread_id, user_id, body, created_at) VALUES (?, ?, ?, NOW())";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("iis", $thread_id, $user_id, $response_body);
+        
+        if ($stmt->execute()) {
+            $response_id = $stmt->insert_id;
+            
+            // Create notification for thread author (if responder is not the author)
+            if ($user_id != $threadAuthorId) {
+                // Get thread title for notification content
+                $threadTitleSql = "SELECT title FROM forum_threads WHERE id = ?";
+                $titleStmt = $conn->prepare($threadTitleSql);
+                $titleStmt->bind_param("i", $thread_id);
+                $titleStmt->execute();
+                $titleResult = $titleStmt->get_result();
+                $titleRow = $titleResult->fetch_assoc();
+                $threadTitle = $titleRow['title'] ?? 'your thread';
+                
+                // Create notification content
+                $notificationContent = "New reply to your thread: " . $threadTitle;
+                
+                // Create notification
+                createNotification($conn, $threadAuthorId, 'forum_response', $response_id, $notificationContent);
+            }
+            
+            // New code block
+            $replyId      = $conn->insert_id;
+            $threadOwner  = $threadAuthorId;
+            $currentUser  = $_SESSION['user_id'];
+
+            require_once __DIR__ . '/../../includes/notification_handler.php';
+            sendNotification(
+              $conn,
+              $threadOwner,
+              'forum_response',
+              $currentUser,
+              $replyId
+            );
+            
+            $_SESSION['success'] = "Your response has been posted.";
+            header('Location: ../../public/forum.php?thread=' . $thread_id);
+            exit;
+        } else {
+            $_SESSION['error'] = "Something went wrong. Please try again.";
+            header('Location: ../../public/forum.php?thread=' . $thread_id);
+            exit;
+        }
     } else {
-        $_SESSION['error'] = "Failed to post your response. Please try again.";
+        $_SESSION['error'] = "Thread not found.";
+        header('Location: ../../public/forum.php');
+        exit;
     }
-    
-    // Redirect back to the thread
-    header('Location: ../../public/forum.php?thread=' . $threadId);
-    exit();
 } else {
-    // If someone tries to access this file directly without submitting the form
+    // If not a POST request, redirect to forum
     header('Location: ../../public/forum.php');
-    exit();
+    exit;
 }
 ?>
 

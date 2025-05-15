@@ -6,6 +6,8 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
+  max-width: 1200px;
+  margin: auto;
 }
 
 /* ========================================================================
@@ -14,6 +16,7 @@ body {
 .nav {
   background-color: #ffffff;
   margin: 15px 8px;
+  max-width: 1200px;
 }
 
 .navbar-brand {
@@ -29,6 +32,7 @@ body {
   flex-direction: column;
   justify-content: center;
   padding: 20px;
+  max-width: 1200px;
 }
 
 .content {
@@ -440,6 +444,7 @@ text-align: center;
   padding: 0.8rem;
   position: relative;
   border-radius: 15px;
+  max-width: 1200px;
 }
 
 .link {
@@ -1832,4 +1837,199 @@ body.sidebar-active .main-content {
 .pro-details a:hover, .username a:hover {
   color: #0f758e;
   text-decoration: underline;
+}
+
+/* ========================================================================
+    Enhanced Responsive Styles
+======================================================================== */
+@media (max-width: 1200px) {
+  .top-cards {
+    flex-wrap: wrap;
+  }
+  
+  .sub-card {
+    width: 45%;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 992px) {
+  .card-container {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .notifications-dropdown {
+    right: 0;
+    width: 290px;
+  }
+  
+  .welcome-banner h1 {
+    font-size: 26px;
+  }
+  
+  .section-title {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 768px) {
+  .menu {
+    padding: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .link {
+    width: 50px;
+  }
+  
+  .link:hover, .link:focus, .link.active {
+    width: 100px;
+  }
+  
+  .link-title {
+    font-size: 1.2em;
+  }
+  
+  .sidebar {
+    width: 200px;
+    left: -200px;
+  }
+  
+  .sidebar.active {
+    left: 0;
+  }
+  
+  .main-content {
+    padding: 10px;
+    width: 100%;
+  }
+  
+  .top-cards {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .sub-card {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .card-container {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    width: 95%;
+    gap: 15px;
+  }
+  
+  .marketplace h1 {
+    width: 80%;
+    font-size: 24px;
+  }
+  
+  .welcome-banner {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .welcome-banner h1 {
+    font-size: 22px;
+  }
+  
+  .welcome-banner p {
+    font-size: 0.95em;
+  }
+  
+  .section-title {
+    font-size: 1.4em;
+  }
+  
+  .details {
+    flex-direction: column;
+    height: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .menu {
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 5px;
+    margin: 5px;
+  }
+  
+  .link {
+    width: 45px;
+    height: 25px;
+  }
+  
+  .link-icon {
+    left: 10px;
+  }
+  
+  .link-icon img {
+    height: 20px;
+    width: 20px;
+  }
+  
+  .link:hover, .link:focus, .link.active {
+    width: 80px;
+  }
+  
+  .link-title {
+    font-size: 1em;
+    text-indent: 30px;
+  }
+  
+  .card-container {
+    grid-template-columns: 1fr;
+    width: 98%;
+  }
+  
+  .marketplace h1 {
+    width: 90%;
+    font-size: 20px;
+    padding: 10px;
+  }
+  
+  .notifications-dropdown {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    max-height: 70vh;
+    border-radius: 0;
+  }
+  
+  .welcomePrompt-banner {
+    padding: 12px;
+  }
+  
+  .welcomePrompt-banner h1 {
+    font-size: 20px;
+  }
+  
+  .cta-container {
+    padding: 15px;
+    margin: 20px 0;
+  }
+  
+  .cta-btn {
+    padding: 10px 15px;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .view-all-btn {
+    font-size: 16px;
+    padding: 8px 15px;
+    width: 100%;
+  }
 }

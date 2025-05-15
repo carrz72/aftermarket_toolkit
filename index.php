@@ -3,6 +3,12 @@ session_start();
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/includes/image_helper.php';
 
+// Define INCLUDED constant for included files
+define('INCLUDED', true);
+
+// Ensure necessary tables and structures exist
+require_once __DIR__ . '/includes/ensure_tables.php';
+
 // Set current section for menu highlighting
 $current_section = 'home';
 
@@ -46,12 +52,19 @@ $stats = $statsResult->fetch_assoc();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aftermarket Toolbox - Home</title>
+  <title>Aftermarket Toolbox - Home</title>  
   <link rel="stylesheet" href="./public/assets/css/index.css">
- 
+  <link rel="stylesheet" href="./public/assets/css/notifications.css">
+  <!-- Add Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<?php require_once __DIR__ . '/includes/navigation.php'; ?>
+<?php 
+// INCLUDED constant is already defined at the top of this file
+require_once __DIR__ . '/includes/notification_handler.php';
+require_once __DIR__ . '/includes/navigation.php';
+?>
 
 <div class="sidebar">
     <button id="sidebarToggle" class="sidebar-toggle">☰</button>
@@ -389,30 +402,325 @@ $stats = $statsResult->fetch_assoc();
       alert("Something went wrong. Please try again.");
     });
   }
-  
-  // Add at the bottom of your script section
+    // Add at the bottom of your script section
   document.addEventListener('DOMContentLoaded', function() {
     // Check if user is logged in and initialize saved bookmarks
     fetch('./api/bookmarks/get_bookmarks.php')
       .then(response => response.json())
       .then(data => {
-        if (data.success && data.bookmarks) {
-          // Mark already bookmarked items
-          data.bookmarks.forEach(bookmarkId => {
-            const bookmarkBtn = document.querySelector(`button.bookmark[onclick*="saveBookmark(${bookmarkId})"]`);
-            if (bookmarkBtn) {
-              bookmarkBtn.classList.add('bookmarked');
-              const img = bookmarkBtn.querySelector('img');
-              if (img) {
-                img.src = './public/assets/images/bookmark-filled.svg';
-                img.style.filter = 'none';
-              }
+        if (data.success) {
+          // Update bookmark icons for saved listings
+          data.bookmarks.forEach(listingId => {
+            const bookmarkButton = document.querySelector(`.bookmark-btn[data-listing-id="${listingId}"]`);
+            if (bookmarkButton) {
+              bookmarkButton.classList.add('bookmarked');
+              bookmarkButton.innerHTML = '<i class="fas fa-bookmark"></i>';
             }
           });
         }
       })
-      .catch(error => console.error('Error loading bookmarks:', error));
+      .catch(error => {
+        console.log('Error fetching bookmarks:', error);
+      });
+      
+    // Initialize notification system
+    if (document.getElementById('notificationsBtn')) {
+      initNotificationSystem();
+    }
   });
+  // Function to fetch notifications
+  const notifApiUrl = '<?= $root_path ?>public/api/notifications.php';
+
+  function fetchNotifications() {
+    fetch(notifApiUrl, { credentials: 'same-origin' })
+      .then(response => {
+        console.log('Notification response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Notification data:', data);
+        if (data.success) {
+          updateNotificationBadge(data.counts.total || 0);
+          updateNotificationDropdown(data.notifications || []);
+        } else {
+          console.error('Error in notification response:', data.message);
+          // Show error in dropdown if there's an issue
+          const list = document.querySelector('.notifications-list');
+          if (list) {
+            list.innerHTML = '<div class="no-notifications">Unable to load notifications</div>';
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching notifications:', error);
+        // Show error in dropdown if there's an exception
+        const list = document.querySelector('.notifications-list');
+        if (list) {
+          list.innerHTML = '<div class="no-notifications">Error loading notifications</div>';
+        }
+      });
+  }
+  
+  // Update the notification badge count
+  function updateNotificationBadge(count) {
+    const badge = document.getElementById('notification-badge');
+    if (!badge) return;
+    
+    if (count > 0) {
+      badge.style.display = 'inline-flex';
+      badge.textContent = count;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+    // Update the notification dropdown content
+  function updateNotificationDropdown(notifications) {
+    const list = document.querySelector('.notifications-list');
+    if (!list) return;
+    
+    if (!Array.isArray(notifications) || notifications.length === 0) {
+      list.innerHTML = '<div class="no-notifications">No new notifications</div>';
+      return;
+    }
+    
+    let html = '';
+    const maxToShow = 5;
+    
+    for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
+      const notification = notifications[i];
+      const unreadClass = notification.is_read ? '' : 'unread';
+      
+      html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
+      
+      // Icon based on type
+      let iconClass = getNotificationIconClass(notification.type);
+      
+      html += `<div class="notification-icon"><i class="fas ${iconClass}"></i></div>`;
+      html += `<div class="notification-content">`;
+      html += `<div class="notification-text">${notification.content}</div>`;
+      html += `<div class="notification-time">${formatTimeAgo(notification.created_at)}</div>`;
+      html += `</div>`;
+      
+      if (!notification.is_read) {
+        html += `<div class="notification-mark-read"><i class="fas fa-check"></i></div>`;
+      }
+      
+      // Add a proper link for navigation
+      const link = getNotificationLink(notification.type, notification.related_id);
+      html += `<a href="${link}" class="notification-link"></a>`;
+      
+      html += `</div>`;
+    }
+    
+    // "View all" button if there are more notifications
+    if (notifications.length > maxToShow) {
+      html += `<div class="notification-item show-all">`;
+      html += `<a href="./public/notifications.php">View all notifications</a>`;
+      html += `</div>`;
+    }
+    
+    list.innerHTML = html;
+  }
+  
+  // Get the appropriate link for a notification
+  function getNotificationLink(type, relatedId) {
+    switch(type) {
+      case 'friend_request':
+        return './public/friends.php';
+      case 'message':
+        return './public/chat.php';
+      case 'forum_response':
+        return relatedId ? `./public/forum.php?thread=${relatedId}` : './public/forum.php';
+      default:
+        return './public/notifications.php';
+    }
+  }
+  
+  // Format timestamp as time ago
+  function formatTimeAgo(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const secondsPast = (now.getTime() - date.getTime()) / 1000;
+    
+    if (secondsPast < 60) {
+      return 'just now';
+    }
+    if (secondsPast < 3600) {
+      return Math.round(secondsPast / 60) + ' minutes ago';
+    }
+    if (secondsPast <= 86400) {
+      return Math.round(secondsPast / 3600) + ' hours ago';
+    }
+    if (secondsPast <= 2592000) {
+      return Math.round(secondsPast / 86400) + ' days ago';
+    }
+    if (secondsPast <= 31536000) {
+      return Math.round(secondsPast / 2592000) + ' months ago';
+    }
+    return Math.round(secondsPast / 31536000) + ' years ago';
+  }
+  
+  // Initialize notification system
+  function initNotificationSystem() {
+    const notificationsBtn = document.getElementById('notificationsBtn');
+    const notificationsDropdown = document.getElementById('notificationsDropdown');
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    
+    // Toggle dropdown when clicking on the notification button
+    notificationsBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      notificationsDropdown.classList.toggle('show');
+      
+      // Fetch fresh notifications when opening dropdown
+      if (notificationsDropdown.classList.contains('show')) {
+        fetchNotifications();
+      }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (notificationsDropdown && 
+          !notificationsBtn.contains(e.target) && 
+          !notificationsDropdown.contains(e.target)) {
+        notificationsDropdown.classList.remove('show');
+      }
+    });
+    
+    // Mark all notifications as read
+    if (markAllReadBtn) {
+      markAllReadBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        fetch(notifApiUrl, {
+          credentials: 'same-origin',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'action=mark_all_read'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update UI
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+              item.classList.remove('unread');
+            });
+            document.querySelectorAll('.notification-mark-read').forEach(btn => {
+              btn.remove();
+            });
+            updateNotificationBadge(0);
+          }
+        })
+        .catch(error => console.error('Error marking all as read:', error));
+      });
+    }
+    
+    // Mark individual notification as read and handle clicks
+    document.addEventListener('click', function(e) {
+      // Handle mark as read button clicks
+      const markReadBtn = e.target.closest('.notification-mark-read');
+      if (markReadBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const notificationItem = markReadBtn.closest('.notification-item');
+        const notificationId = notificationItem.dataset.id;
+        
+        fetch(notifApiUrl, {
+          credentials: 'same-origin',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=mark_read&notification_id=${notificationId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            notificationItem.classList.remove('unread');
+            markReadBtn.remove();
+            updateNotificationBadge(data.counts.total);
+          }
+        })
+        .catch(error => console.error('Error marking as read:', error));
+      }
+      
+      // Handle clicking on notification item
+      const notificationItem = e.target.closest('.notification-item:not(.show-all)');
+      if (notificationItem && !e.target.closest('.notification-mark-read')) {
+        const notificationId = notificationItem.dataset.id;
+        const notificationType = notificationItem.dataset.type;
+        const relatedId = notificationItem.dataset.relatedId;
+        
+        // If unread, mark as read before navigating
+        if (notificationItem.classList.contains('unread')) {
+          e.preventDefault();
+          
+          fetch(notifApiUrl, {
+            credentials: 'same-origin',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=mark_read&notification_id=${notificationId}`
+          })
+          .then(() => {
+            // Navigate to the appropriate link
+            window.location.href = getNotificationLink(notificationType, relatedId);
+          })
+          .catch(() => {
+            // Still navigate even if there was an error
+            window.location.href = getNotificationLink(notificationType, relatedId);
+          });
+        }
+      }
+    });
+    
+    // Initial notification fetch
+    fetchNotifications();
+    
+    // Poll for new notifications every minute
+    setInterval(fetchNotifications, 60000);
+  }
+  
+  // Navigate to appropriate page based on notification type
+  function navigateToNotification(type, relatedId) {
+    switch(type) {
+      case 'friend_request':
+        window.location.href = './public/friends.php';
+        break;
+      case 'message':
+        window.location.href = './public/chat.php';
+        break;
+      case 'forum_response':
+        window.location.href = `./public/forum.php?thread=${relatedId}`;
+        break;
+      default:
+        // Default action is to go to notifications page
+        window.location.href = './public/notifications.php';
+    }
+  }
+
+  // Helper function to get the appropriate icon class for a notification type
+  function getNotificationIconClass(type) {
+    switch(type) {
+      case 'friend_request':
+        return 'fa-user-plus';
+      case 'message':
+        return 'fa-envelope';
+      case 'forum_response':
+        return 'fa-comments';
+      case 'listing_comment':
+        return 'fa-tag';
+      default:
+        return 'fa-bell';
+    }
+  }
+  // Notifications are now handled by initNotificationSystem function
+  // Removed old notification initialization code
 </script>
 </body>
 </html>

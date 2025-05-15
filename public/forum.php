@@ -63,6 +63,33 @@ if (!empty($types)) {
 }
 $stmt->execute();
 $result = $stmt->get_result();
+
+// If viewing a specific thread, mark all responses to this thread as read for the current user
+$thread_view = isset($_GET['thread']) && is_numeric($_GET['thread']);
+if ($thread_view && isset($_SESSION['user_id'])) {
+  $threadId = (int)$_GET['thread'];
+  $userId = $_SESSION['user_id'];
+  
+  // Check if the thread belongs to the current user
+  $checkThreadOwner = $conn->prepare("
+    SELECT user_id FROM forum_threads 
+    WHERE id = ? AND user_id = ?
+  ");
+  $checkThreadOwner->bind_param("ii", $threadId, $userId);
+  $checkThreadOwner->execute();
+  $isThreadOwner = ($checkThreadOwner->get_result()->num_rows > 0);
+  
+  // If the user is the thread owner, mark all responses as read
+  if ($isThreadOwner) {
+    $markReadStmt = $conn->prepare("
+      UPDATE forum_replies 
+      SET is_read = 1 
+      WHERE thread_id = ? AND user_id != ?
+    ");
+    $markReadStmt->bind_param("ii", $threadId, $userId);
+    $markReadStmt->execute();
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -198,7 +225,7 @@ $result = $stmt->get_result();
           </div>
         <?php endif; ?>
 
-        <!-- Thread creation form (only for logged in users) -->
+        <!-- Thread creation form (only for logged-in users) -->
         <?php if (isset($_SESSION['user_id'])): ?>
             <div class="create-thread-section">
             <a href="create_forum.php" class="btn btn-primary">Post a Thread</a>

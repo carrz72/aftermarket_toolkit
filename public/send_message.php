@@ -1,7 +1,8 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/db.php';
 header('Content-Type: application/json');
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/notification_handler.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -47,13 +48,32 @@ $stmt = $conn->prepare("INSERT INTO messages (sender_id, receiver_id, message, l
 $stmt->bind_param("iisi", $senderId, $receiverId, $message, $listingId);
 
 if ($stmt->execute()) {
-    $messageId = $stmt->insert_id;
+    $messageId = $conn->insert_id;
+    
+    // Check if notification already exists for this message to prevent duplicates
+    $checkSql = "SELECT id FROM notifications WHERE type = 'message' AND related_id = ?";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bind_param("i", $messageId);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+    
+    // Only create notification if it doesn't already exist
+    if ($checkResult->num_rows == 0) {
+        createChatMessageNotification(
+          $conn,
+          $messageId,
+          $senderId,
+          $receiverId,
+          $message
+        );
+    }
+
     echo json_encode([
-        'success' => true, 
+        'success'    => true,
         'message_id' => $messageId,
-        'sent_at' => date('Y-m-d H:i:s'),
+        'sent_at'    => date('Y-m-d H:i:s'),
         'listing_id' => $listingId
     ]);
 } else {
-    echo json_encode(['success' => false, 'error' => 'Failed to send message: ' . $conn->error]);
+    echo json_encode(['success' => false, 'error' => 'Failed to send message: '.$conn->error]);
 }
