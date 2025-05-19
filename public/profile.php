@@ -49,13 +49,14 @@ if (!$user) {
 
 // Handle profile update (only for own profile)
 $message = '';
-if ($viewingSelf && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['update_profile'])) {
+if ($viewingSelf && $_SERVER['REQUEST_METHOD'] === 'POST') {    if (isset($_POST['update_profile'])) {
         $bio = trim($_POST['bio']);
         $location = trim($_POST['location']);
+        $emailNotifications = isset($_POST['email_notifications']) ? 1 : 0;
         
-        $updateStmt = $conn->prepare("UPDATE users SET bio = ?, location = ? WHERE id = ?");
-        $updateStmt->bind_param("ssi", $bio, $location, $userId);
+        // Fix: Use the correct variable $viewedUserId instead of $userId
+        $updateStmt = $conn->prepare("UPDATE users SET bio = ?, location = ?, email_notifications = ? WHERE id = ?");
+        $updateStmt->bind_param("ssii", $bio, $location, $emailNotifications, $viewedUserId);
         
         if ($updateStmt->execute()) {
             $message = "Profile updated successfully!";
@@ -149,27 +150,27 @@ $forumStmt->close();
                     <img src="./assets/images/market.svg" alt="Market">
                 </span>
                 <span class="link-title">Market</span>
-            </a>
-            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='./marketplace.php?view=explore';">Explore</button>
-                <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
-                <button class="value" onclick="window.location.href='../api/listings/create_listing.php';">List Item</button>
-                <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+            </a>            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='./marketplace.php?view=explore';"><img src="./assets/images/exploreicon.svg" alt="Explore">Explore</button>
+                <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/view_listingicon.svg" alt="View Listings">My Listings</button>
+                <button class="value" onclick="window.location.href='../api/listings/create_listing.php';"><img src="./assets/images/list_itemicon.svg" alt="Create Listing">List Item</button>
+                <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
             </div>
         </div>
 
         <!-- Forum dropdown -->
         <div class="profile-container">
-            <a href="#" class="link" onclick="toggleDropdown(this, event)">
-                <span class="link-icon">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">                <span class="link-icon">
                     <img src="./assets/images/forum-icon.svg" alt="Forum">
+                    <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
+                        <span class="notification-badge forum-badge"><?= $notificationCounts['forum_responses'] ?></span>
+                    <?php endif; ?>
                 </span>
                 <span class="link-title">Forum</span>
-            </a>
-            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='./forum.php?view=threads';">View Threads</button>
-                <button class="value" onclick="window.location.href='./forum.php?view=start_thread';">Start Thread</button>
-                <button class="value" onclick="window.location.href='./forum.php?view=post_question';">Ask Question</button>
+            </a>            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='./forum.php?view=threads';"><img src="./assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
+                <button class="value" onclick="window.location.href='./forum.php?view=start_thread';"><img src="./assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
+                <button class="value" onclick="window.location.href='./forum.php?view=post_question';"><img src="./assets/images/start_threadicon.svg" alt="Post Question">Ask Question</button>
             </div>
         </div>
         
@@ -185,14 +186,12 @@ $forumStmt->close();
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <button class="value" onclick="window.location.href='./profile.php';">
                         <img src="./assets/images/profile-icon.svg" alt="Profile">Account
-                    </button>
-                    <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
-                    <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-                    <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
-                    <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
-                <?php else: ?>
-                    <button class="value" onclick="window.location.href='./login.php';">Login</button>
-                    <button class="value" onclick="window.location.href='./register.php';">Register</button>
+                    </button>                    <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/mylistingicon.svg" alt="Market">My Listings</button>
+                    <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
+                    <button class="value" onclick="window.location.href='./friends.php';"><img src="./assets/images/friendsicon.svg" alt="Friends">Friends</button>
+                    <button class="value" onclick="window.location.href='./logout.php';"><img src="./assets/images/Log_Outicon.svg" alt="Logout">Logout</button>                <?php else: ?>
+                    <button class="value" onclick="window.location.href='./login.php';"><img src="./assets/images/Log_Outicon.svg" alt="Login">Login</button>
+                    <button class="value" onclick="window.location.href='./register.php';"><img src="./assets/images/friendsicon.svg" alt="Register">Register</button>
                 <?php endif; ?>
             </div>
         </div>
@@ -260,7 +259,7 @@ $forumStmt->close();
                 <h1><?= htmlspecialchars($user['username']) ?></h1>
                 <p class="username">@<?= htmlspecialchars($user['username']) ?></p>
                 <?php if (!empty($user['location'])): ?>
-                    <p class="location"><img src="./assets/images/location-icon.svg" alt="Location"> <?= htmlspecialchars($user['location']) ?></p>
+                    <p class="location"> <?= htmlspecialchars($user['location']) ?></p>
                 <?php endif; ?>
                 <p class="member-since">Member since: <?= date('F Y', strtotime($user['created_at'])) ?></p>
                 
@@ -304,11 +303,19 @@ $forumStmt->close();
             </ul>
         </div>
 
-        <div class="profile-sections">
-            <!-- About Section -->
+        <div class="profile-sections">            <!-- About Section -->
             <section id="about" class="profile-section active">
                 <h2>About Me</h2>
-                <p><?= !empty($user['bio']) ? htmlspecialchars($user['bio']) : 'No bio yet.' ?></p>
+                <?php if (!empty($user['location'])): ?>
+                    <div class="profile-location">
+                        <h3>Location</h3>
+                        <p> <?= htmlspecialchars($user['location']) ?></p>
+                    </div>
+                <?php endif; ?>
+                <div class="profile-bio">
+                    <h3>Bio</h3>
+                    <p><?= !empty($user['bio']) ? htmlspecialchars($user['bio']) : 'No bio yet.' ?></p>
+                </div>
             </section>
 
             <!-- Listings Section -->
@@ -371,8 +378,27 @@ $forumStmt->close();
             </section>
 
             <!-- Settings Section -->
-            <section id="settings" class="profile-section">
-                <h2>Edit Profile</h2>
+            <section id="settings" class="profile-section">                <h2>Edit Profile</h2>
+                <div class="profile-preview">
+                    <h3>Current Information</h3>
+                    <div class="preview-item">
+                        <span class="preview-label">Username:</span>
+                        <span class="preview-value"><?= htmlspecialchars($user['username']) ?></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Location:</span>
+                        <span class="preview-value"><?= !empty($user['location']) ? htmlspecialchars($user['location']) : 'Not specified' ?></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Bio:</span>
+                        <span class="preview-value"><?= !empty($user['bio']) ? htmlspecialchars($user['bio']) : 'No bio yet.' ?></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Member since:</span>
+                        <span class="preview-value"><?= date('F Y', strtotime($user['created_at'])) ?></span>
+                    </div>
+                </div>
+                
                 <form action="profile.php" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="profile_picture">Profile Picture</label>
@@ -392,6 +418,14 @@ $forumStmt->close();
                     <div class="form-group">
                         <label for="bio">Bio</label>
                         <textarea id="bio" name="bio" rows="5"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="email_notifications" name="email_notifications" value="1" <?= (!isset($user['email_notifications']) || $user['email_notifications'] == 1) ? 'checked' : '' ?>>
+                            <span class="checkmark"></span>
+                            Receive email notifications
+                        </label>
+                        <p class="help-text">You'll receive emails for forum replies, messages, and other important updates.</p>
                     </div>
                     <button type="submit" name="update_profile" class="submit-btn">Update Profile</button>
                 </form>

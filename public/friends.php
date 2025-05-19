@@ -209,7 +209,7 @@ function getFriendStats($conn, $friendId) {
     <title>Friends - Aftermarket Toolbox</title>
     <link rel="stylesheet" href="./assets/css/forum.css">
     <link rel="stylesheet" href="./assets/css/notifications.css">
-    <!-- Add Font Awesome for notification icons -->
+    <!-- Font Awesome for notification icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .friends-container {
@@ -414,27 +414,27 @@ function getFriendStats($conn, $friendId) {
         <img src="./assets/images/market.svg" alt="Market">
       </span>
       <span class="link-title">Market</span>
-    </a>
-    <div class="dropdown-content">
-      <button class="value" onclick="window.location.href='./marketplace.php?view=explore';">Explore</button>
-      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">View Listings</button>
-      <button class="value" onclick="window.location.href='../api/listings/create_listing.php';">List Item</button>
-      <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+    </a>    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./marketplace.php?view=explore';"><img src="./assets/images/exploreicon.svg" alt="Explore">Explore</button>
+      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/view_listingicon.svg" alt="View Listings">View Listings</button>
+      <button class="value" onclick="window.location.href='../api/listings/create_listing.php';"><img src="./assets/images/list_itemicon.svg" alt="Create Listing">List Item</button>
+      <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
     </div>
   </div>
   
   <!-- Forum dropdown -->
   <div class="profile-container">
-    <a href="#" class="link" onclick="toggleDropdown(this, event)">
-      <span class="link-icon">
+    <a href="#" class="link" onclick="toggleDropdown(this, event)">      <span class="link-icon">
         <img src="./assets/images/forum-icon.svg" alt="Forum">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
+          <span class="notification-badge forum"><?= $notificationCounts['forum_responses'] ?></span>
+        <?php endif; ?>
       </span>
       <span class="link-title">Forum</span>
-    </a>
-    <div class="dropdown-content">
-      <button class="value" onclick="window.location.href='./forum.php?view=threads';">View Threads</button>
-      <button class="value" onclick="window.location.href='./forum.php?view=start_thread';">Start Thread</button>
-      <button class="value" onclick="window.location.href='./forum.php?view=post_question';">Post Question</button>
+    </a>    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./forum.php?view=threads';"><img src="./assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=start_thread';"><img src="./assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=post_question';"><img src="./assets/images/start_threadicon.svg" alt="Post Question">Post Question</button>
     </div>
   </div>
 
@@ -447,15 +447,17 @@ function getFriendStats($conn, $friendId) {
       <span class="link-title">Profile</span>
     </a>
     <div id="profileDropdown" class="dropdown-content">
-      <?php if (isset($_SESSION['user_id'])): ?>
-        <button class="value" onclick="window.location.href='./profile.php';">
+      <?php if (isset($_SESSION['user_id'])): ?>        <button class="value" onclick="window.location.href='./profile.php';">
           <img src="./assets/images/profile-icon.svg" alt="Profile">Account
         </button>
-        <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
-        <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-        <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
-        <button class="value" onclick="window.location.href='./account.php';">Account Settings</button>
-        <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
+        <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/mylistingicon.svg" alt="Market">My Listings</button>
+        <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
+        <button class="value" onclick="window.location.href='./friends.php';"><img src="./assets/images/friendsicon.svg" alt="Friends">Friends
+          <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['friend_requests']) && $notificationCounts['friend_requests'] > 0): ?>
+            <span class="notification-badge friends"><?= $notificationCounts['friend_requests'] ?></span>
+          <?php endif; ?>
+        </button>
+        <button class="value" onclick="window.location.href='./logout.php';"><img src="./assets/images/Log_Outicon.svg" alt="Logout">Logout</button>
       <?php else: ?>
         <button class="value" onclick="window.location.href='./login.php';">Login</button>
         <button class="value" onclick="window.location.href='./register.php';">Register</button>
@@ -463,10 +465,12 @@ function getFriendStats($conn, $friendId) {
     </div>
   </div>
 
-  <?php if (isset($_SESSION['user_id'])): ?>
-    <a href="./chat.php" class="link">
+  <?php if (isset($_SESSION['user_id'])): ?>    <a href="./chat.php" class="link">
       <span class="link-icon">
         <img src="./assets/images/chat-icon.svg" alt="Chat">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['messages']) && $notificationCounts['messages'] > 0): ?>
+          <span class="notification-badge messages"><?= $notificationCounts['messages'] ?></span>
+        <?php endif; ?>
       </span>
       <span class="link-title">Chat</span>
     </a>
@@ -475,28 +479,19 @@ function getFriendStats($conn, $friendId) {
     <div class="notifications-container">
       <button id="notificationsBtn" class="notification-btn">
         <i class="fas fa-bell"></i>
-        <?php 
-          // Get notification counts - use existing function if available
-          $notificationCounts = [];
-          if (function_exists('countUnreadNotifications')) {
-              $notificationCounts = countUnreadNotifications($conn, $_SESSION['user_id']);
-          } else if (function_exists('getNotificationCounts')) {
-              $notificationCounts = getNotificationCounts($_SESSION['user_id'], $conn);
-          }
-          
-          if (!empty($notificationCounts) && isset($notificationCounts['total']) && $notificationCounts['total'] > 0): 
-        ?>
-        <span id="notification-badge"><?= $notificationCounts['total'] ?></span>
+        <?php if (isset($notificationCounts['total']) && $notificationCounts['total'] > 0): ?>
+          <span id="notification-badge"><?= $notificationCounts['total'] ?></span>
         <?php endif; ?>
       </button>
       <div id="notificationsDropdown" class="notifications-dropdown">
         <div class="notifications-header">
           <h3>Notifications</h3>
-          <?php if (!empty($notificationCounts) && isset($notificationCounts['total']) && $notificationCounts['total'] > 0): ?>
-          <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+          <?php if (isset($notificationCounts['total']) && $notificationCounts['total'] > 0): ?>
+            <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
           <?php endif; ?>
         </div>
         <div class="notifications-list">
+          <!-- Notifications will be loaded here via JavaScript -->
           <div class="no-notifications">Loading notifications...</div>
         </div>
       </div>
@@ -684,54 +679,15 @@ function getFriendStats($conn, $friendId) {
 </div>
 
 <script>
-  const delay = 100; // Delay in milliseconds
+  // Initialize notification counts
+  let notificationCounts = {
+    total: <?= isset($notificationCounts['total']) ? $notificationCounts['total'] : 0 ?>,
+    messages: <?= isset($notificationCounts['messages']) ? $notificationCounts['messages'] : 0 ?>,
+    friend_requests: <?= isset($notificationCounts['friend_requests']) ? $notificationCounts['friend_requests'] : 0 ?>,
+    forum_responses: <?= isset($notificationCounts['forum_responses']) ? $notificationCounts['forum_responses'] : 0 ?>
+  };
 
-  // Apply event listeners to all profile containers
-  document.querySelectorAll('.profile-container').forEach(container => {
-    let timeoutId = null;
-
-    container.addEventListener('mouseenter', () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-      timeoutId = setTimeout(() => {
-        container.classList.add('active');
-      }, delay);
-    });
-
-    container.addEventListener('mouseleave', () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-      timeoutId = setTimeout(() => {
-        container.classList.remove('active');
-      }, delay);
-    });
-  });
-
-  // Toggle dropdown with a delay
-  function toggleDropdown(element, event) {
-    event.preventDefault();
-    const container = element.closest('.profile-container');
-    setTimeout(() => {
-      container.classList.toggle('active');
-    }, delay);
-  }
-
-  // Close all dropdowns with a delay when clicking outside
-  document.addEventListener('click', function(e) {
-    document.querySelectorAll('.profile-container').forEach(container => {
-      if (!container.contains(e.target)) {
-        setTimeout(() => {
-          container.classList.remove('active');
-        }, delay);
-      }
-    });
-  });
-  
-  // Initialize notification system if notifications button exists
+  // Initialize notification system
   if (document.getElementById('notificationsBtn')) {
     initNotificationSystem();
     // Initial fetch
@@ -742,9 +698,7 @@ function getFriendStats($conn, $friendId) {
   
   // Fetch notifications via AJAX
   function fetchNotifications() {
-    const baseUrl = window.location.pathname.includes('/public/') ? '..' : '/aftermarket_toolkit';
-    
-    fetch(`${baseUrl}/public/api/notifications.php`)
+    fetch('./api/notifications.php')
       .then(response => response.json())
       .then(data => {
         if (data.success) {
@@ -819,9 +773,8 @@ function getFriendStats($conn, $friendId) {
     
     // If there are more notifications than we're showing, add a "view all" link
     if (notifications.length > maxToShow) {
-      const baseUrl = window.location.pathname.includes('/public/') ? '.' : './public';
       html += '<div class="notification-item show-all">';
-      html += `<a href="${baseUrl}/notifications.php">View all notifications</a>`;
+      html += `<a href="./notifications.php">View all notifications</a>`;
       html += '</div>';
     }
     
@@ -830,23 +783,21 @@ function getFriendStats($conn, $friendId) {
   
   // Get the appropriate link for a notification
   function getNotificationLink(type, relatedId) {
-    const baseUrl = window.location.pathname.includes('/public/') ? '.' : './public';
-    
     switch(type) {
       case 'friend_request':
-        return `${baseUrl}/friends.php`;
+        return './friends.php';
       case 'message':
-        return `${baseUrl}/chat.php?chat=${relatedId}`;
+        return relatedId ? `./chat.php?chat=${relatedId}` : './chat.php';
       case 'forum_response':
-        return relatedId ? `${baseUrl}/forum.php?thread=${relatedId}` : `${baseUrl}/forum.php`;
+        return relatedId ? `./forum.php?thread=${relatedId}` : './forum.php';
       case 'listing_comment':
-        return relatedId ? `${baseUrl}/marketplace.php?listing=${relatedId}` : `${baseUrl}/marketplace.php`;
+        return relatedId ? `./marketplace.php?listing=${relatedId}` : './marketplace.php';
       default:
-        return `${baseUrl}/notifications.php`;
+        return './notifications.php';
     }
   }
   
-  // Format timestamp as "time ago" text
+  // Format timestamp as time ago text
   function formatTimeAgo(timestamp) {
     const date = new Date(timestamp);
     const now = new Date();
@@ -914,7 +865,7 @@ function getFriendStats($conn, $friendId) {
         e.preventDefault();
         e.stopPropagation();
         
-        fetch('/aftermarket_toolkit/public/api/notifications.php', {
+        fetch('./api/notifications.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -937,36 +888,54 @@ function getFriendStats($conn, $friendId) {
         .catch(error => console.error('Error marking all as read:', error));
       });
     }
-    
-    // Handle notification item clicks
-    document.addEventListener('click', function(e) {
-      // Mark individual notification as read
-      const markReadBtn = e.target.closest('.notification-mark-read');
-      if (markReadBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const notificationItem = markReadBtn.closest('.notification-item');
-        const notificationId = notificationItem.dataset.id;
-        
-        fetch('/aftermarket_toolkit/public/api/notifications.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: `action=mark_read&notification_id=${notificationId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            notificationItem.classList.remove('unread');
-            markReadBtn.remove();
-          }
-        })
-        .catch(error => console.error('Error marking as read:', error));
+  }
+
+  const delay = 100; // Delay in milliseconds
+
+  // Apply event listeners to all profile containers
+  document.querySelectorAll('.profile-container').forEach(container => {
+    let timeoutId = null;
+
+    container.addEventListener('mouseenter', () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      timeoutId = setTimeout(() => {
+        container.classList.add('active');
+      }, delay);
+    });
+
+    container.addEventListener('mouseleave', () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      timeoutId = setTimeout(() => {
+        container.classList.remove('active');
+      }, delay);
+    });
+  });
+
+  // Toggle dropdown with a delay
+  function toggleDropdown(element, event) {
+    event.preventDefault();
+    const container = element.closest('.profile-container');
+    setTimeout(() => {
+      container.classList.toggle('active');
+    }, delay);
+  }
+
+  // Close all dropdowns with a delay when clicking outside
+  document.addEventListener('click', function(e) {
+    document.querySelectorAll('.profile-container').forEach(container => {
+      if (!container.contains(e.target)) {
+        setTimeout(() => {
+          container.classList.remove('active');
+        }, delay);
       }
     });
-  }
+  });
 </script>
 </body>
 </html>

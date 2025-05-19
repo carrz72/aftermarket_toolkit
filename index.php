@@ -701,10 +701,7 @@ require_once __DIR__ . '/includes/navigation.php';
       default:
         // Default action is to go to notifications page
         window.location.href = './public/notifications.php';
-    }
-  }
-
-  // Helper function to get the appropriate icon class for a notification type
+    }  }  // Helper function to get the appropriate icon class for a notification type
   function getNotificationIconClass(type) {
     switch(type) {
       case 'friend_request':
@@ -719,8 +716,6 @@ require_once __DIR__ . '/includes/navigation.php';
         return 'fa-bell';
     }
   }
-  // Notifications are now handled by initNotificationSystem function
-  // Removed old notification initialization code
 </script>
 </body>
 </html>

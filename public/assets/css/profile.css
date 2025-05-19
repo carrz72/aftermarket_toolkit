@@ -3,7 +3,9 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    background-image: url("../images/marketplace_bg5.jpg");
+    background-position: center;
+    background-size: cover;
     color: #333;
 }
 
@@ -15,10 +17,11 @@ body {
     gap: 10px;
     justify-content: center;
     text-align: center;
-    margin: 10px;
+    margin: 10px auto;
     padding: 0.8rem;
     position: relative;
     border-radius: 15px;
+      max-width: 1200px;
 }
 
 .link {
@@ -212,8 +215,9 @@ body {
 /* Profile Header */
 .profile-header {
     width: 100%;
-    margin-bottom: 20px;
+    margin: 20px auto;
     position: relative;
+      max-width: 1200px;
 }
 
 .profile-banner {
@@ -227,7 +231,8 @@ body {
     display: flex;
     align-items: flex-end;
     padding: 0 30px;
-    margin-top: -150px;
+    margin-top: -180px;
+      max-width: 1200px;
 }
 
 .profile-avatar {
@@ -253,7 +258,7 @@ body {
 
 .profile-details h1 {
     margin: 0;
-    color: #ffffff;
+    color: #000000;
     font-size: 2.5rem;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
@@ -279,7 +284,7 @@ body {
 
 .member-since {
     margin: 5px 0;
-    color: #ffffff;
+    color: #000000;
     font-size: 0.9rem;
 }
 
@@ -340,11 +345,11 @@ body {
 
 /* Message alerts */
 .message {
-    margin: 20px;
+    margin: 20px auto;
     padding: 15px;
     border-radius: 5px;
     text-align: center;
-}
+    max-width: 1200px;}
 
 .success {
     background-color: #d4edda;
@@ -361,10 +366,11 @@ body {
 /* Profile Content */
 .profile-content {
     background-color: #fff;
-    margin: 0 20px;
+    margin: 0 auto;
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     overflow: hidden;
+    max-width: 1200px;
 }
 
 /* Profile Navigation */
@@ -613,6 +619,165 @@ body {
     font-style: italic;
     text-align: center;
     padding: 30px;
+}
+
+/* About Me Section */
+.profile-location {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+}
+
+.profile-location h3 {
+    margin-top: 0;
+    color: #343a40;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.profile-location p {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.profile-location img {
+    height: 18px;
+    margin-right: 8px;
+}
+
+.profile-bio {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+}
+
+.profile-bio h3 {
+    margin-top: 0;
+    color: #343a40;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.profile-bio p {
+    margin: 0;
+    color: #495057;
+    line-height: 1.6;
+}
+
+/* Profile Preview Section */
+.profile-preview {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid #dee2e6;
+}
+
+.profile-preview h3 {
+    margin-top: 0;
+    color: #343a40;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+}
+
+.preview-item {
+    display: flex;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e9ecef;
+}
+
+.preview-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.preview-label {
+    font-weight: bold;
+    color: #495057;
+    width: 120px;
+    flex-shrink: 0;
+}
+
+.preview-value {
+    color: #6c757d;
+    flex: 1;
+}
+
+/* Checkbox styling */
+.checkbox-group {
+    margin-bottom: 25px;
+}
+
+.checkbox-container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+    background-color: #e9ecef;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background-color: #189dc5;
+    border-color: #189dc5;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.help-text {
+    margin-top: 5px;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-left: 35px;
 }
 
 /* Responsive design */

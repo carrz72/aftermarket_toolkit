@@ -232,3 +232,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['response_id']) && iss
     exit();
 }
 ?>
+
+<?php
+// Redirect to the forum_response_handler.php script which includes email notifications
+require_once __DIR__ . '/forum_response_handler.php';
+?>

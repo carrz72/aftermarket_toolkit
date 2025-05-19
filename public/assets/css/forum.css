@@ -1,18 +1,36 @@
 /* ========================================================================
-   Base Styles
+   Base Styles - Root Variables
 ======================================================================== */
+:root {
+  --primary-color: #189dc5;
+  --primary-hover: #0f758e;
+  --dark-bg: #262626;
+  --light-bg: #ffffff;
+  --text-dark: #000000;
+  --text-light: #ffffff;
+  --text-muted: #666666;
+  --border-color: #dddddd;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.25);
+  --border-radius-sm: 5px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 15px;
+  --transition-speed: 0.3s;
+}
+
 body {
  background-image: url("../images/marketplace_bg5.jpg");
   background-position: center;
   background-size: cover;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
   
-  /* ========================================================================
-     Navbar & Menu Styles
-  ======================================================================== */
+/* ========================================================================
+   Navbar & Menu Styles
+======================================================================== */
   .menu {
     background-color: white;
     box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.541);
@@ -20,10 +38,11 @@ body {
     gap: 10px;
     justify-content: center;
   text-align: center;
-    margin: 10px;
+    margin: 10px auto;
     padding: 0.8rem;
     position: relative;
     border-radius: 15px;
+       max-width: 1200px;
   }
   
   .link {
@@ -266,16 +285,19 @@ body {
      Forum Styles
   ======================================================================== */
   .forum {
-    margin: 20px;
+    margin: 20px auto;
     padding: 20px;
     background-color: #fff;
     border-radius: 10px;
     background-image: url("../images/forum_bg4.jpg");
     background-position: center;
     background-size: cover;
+      max-width: 1200px;
   }
   
   .forum-container {
+    display: flex;
+    flex-direction: column;
     max-width: 1200px;
     margin: auto;
   }
@@ -295,6 +317,7 @@ body {
   
   .forum-section .container {
     padding: 20px;
+       max-width: 1200px;
   }
   
 .login-in{
@@ -313,12 +336,14 @@ body {
     padding: 6px;
     border-radius: 10px;
   }
-
+/* ========================================================================
+     Forum Threads & Cards
+  ======================================================================== */
   .forum-threads {
     margin-top: 20px;
     color: white;
   }
-  
+ 
   .forumcard {
     text-align: start;
     background-image: url("../images/forum_bg4.jpg");
@@ -361,12 +386,13 @@ body {
 }
   
   .forum-profile .profile-pic {
+     border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    margin: 10px;
+    object-fit: cover;
   }
-
   .forum-content{
     background-color: transparent;
     border-radius: 40px;
@@ -379,7 +405,7 @@ body {
     justify-content: space-between;
     text-align: center;
     align-items: center;
-    min-width: 600px;
+    min-width: min(600px, 90%);
   }
   
  .card-title {
@@ -392,8 +418,8 @@ body {
     padding: 30px 18px;
     text-align: center;
     width: 80%;
-      border-radius: 20px;
-      margin: 2px auto;
+    border-radius: 20px;
+    margin: 2px auto;
   }
 
   .card-text{
@@ -403,38 +429,62 @@ body {
     color: #000000;
     font-size: 16px;
     padding: 10px;
-    width: 70%;
-      border-radius: 1px;
-margin-top: 4px;
-text-align: center;
+    width: auto;
+    max-width: 90%;
+    min-width: 70%;
+    border-radius: 1px;
+    margin-top: 4px;
+    text-align: center;
   }
 
 
   #text{
     margin: 10px;
   }
-  
-  /* ========================================================================
+
+  .card-body{
+    display: flex;
+    flex-direction: column;
+    min-width: 90%;
+  }
+    /* ========================================================================
      Forum Responses Styles
   ======================================================================== */
   .forum-responses {
     display: flex;
     flex-direction: column;
-    width: fit-content;
-    text-align: center;
-    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+    align-items: center;
   }
+    .forum-response {
+      margin: 0 0 10px 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      padding: 15px;
+      background-color: #f8f9fa;
+      color: #212529;
+      border-radius: 8px;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      align-self: flex-start;
+      width: auto;
+      max-width: 90%;
+    }
   
-  .forum-response {
-    margin: 0 10px 10px 0;
+  .response-meta {
     display: flex;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    padding: 13px;
-    background-color: #f1f1f1;
-    color: rgb(0, 0, 0);
-    border-radius: 5px;
-    position: relative;
+    flex-direction: column;
+    margin-right: 10px;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  .response-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 2px;
   }
   
   .response-profile-pic {
@@ -449,11 +499,12 @@ text-align: center;
   .response-username {
     font-weight: bold;
     margin-right: 10px;
+    flex-basis: calc(100% - 160px);
   }
-  
-  .response-content {
+    .response-content {
     position: relative;
-    width: 100%;
+    flex-grow: 1;
+    width: calc(100% - 60px);
   }
   
   .response-body {
@@ -464,6 +515,7 @@ text-align: center;
     transition: max-height 0.3s ease;
     overflow: hidden;
     position: relative;
+    word-wrap: break-word;
   }
 
   .response-body.collapsed {
@@ -662,51 +714,75 @@ text-align: center;
   }
 
 /* Search and Filter Form Styling */
-.forum-section form {
-
-  border-radius: 10px;
- 
+.filter-form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   align-items: center;
+  gap: 15px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 25px !important;
+  width: 100%;
+  max-width: 800px;
 }
 
 .forum-section form input[type="text"] {
   flex: 1;
   min-width: 200px;
-  padding: 10px 15px;
+  padding: 12px 15px;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 16px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .forum-section form input[type="text"]:focus {
   border-color: #189dc5;
   outline: none;
-  box-shadow: 0 0 5px rgba(24, 157, 197, 0.3);
+  box-shadow: 0 0 5px rgba(24, 157, 197, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .forum-section form select {
-  padding: 10px 15px;
+  padding: 12px 15px;
   border-radius: 5px;
   border: 1px solid #ccc;
   background-color: white;
   font-size: 16px;
-  min-width: 150px;
+  min-width: 180px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 35px;
+}
+
+.forum-section form select:focus {
+  border-color: #189dc5;
+  outline: none;
+  box-shadow: 0 0 5px rgba(24, 157, 197, 0.3);
 }
 
 .forum-section form button[type="submit"] {
   background-color: #189dc5;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 10px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: all 0.3s ease;
+  min-width: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.forum-section form button[type="submit"]:hover {
+  background-color: #157a9e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .forum-section form button[type="submit"]:hover {
@@ -714,11 +790,42 @@ text-align: center;
   transform: translateY(-2px);
 }
 
-/* Post Thread Button Styling */
+/* Create Thread Button Styling */
 .create-thread-section {
   text-align: center;
   margin: 20px 0;
 }
+
+
+    /* Delete response button styling */
+    .delete-response-btn {
+      background-color: transparent;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      padding: 2px 4px;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .delete-response-btn:hover {
+      opacity: 1;
+    }
+
+    .forum-response {
+      position: relative;
+    }
+
+    .delete-response-form {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+     
+ 
+    }
 
 .btn-post {
   display: inline-block;
@@ -918,51 +1025,45 @@ text-align: center;
 }
 
 
+.see-all-container {
+  width: 100%;
+  text-align: left;
+  margin: 15px 0;
+  display: flex;
+  justify-content: flex-start;
+  align-self: flex-start;
+  padding-left: 40px;
+}
+
 .see-all-responses-btn {
   background-color: #189dc5;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 15px;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   transition: background-color 0.3s, transform 0.2s;
+  display: inline-block;
+  text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  min-width: 200px; /* Wider button for better visibility */
 }
 
-.response-username a {
-    color: #189dc5;
-    font-weight: bold;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-  
-  .response-username a:hover {
-    color: #0f758e;
-    text-decoration: underline;
-  }
-  
-  .pro-details a {
-    color: #189dc5;
-    font-weight: bold;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-  
-  .pro-details a:hover {
-    color: #0f758e;
-    text-decoration: underline;
-  }
+.see-all-responses-btn:hover {
+  background-color: #157a9e;
+  transform: translateY(-2px);
+}
 
-  .friends-h1{
-    background-color: #189dc5;
-    box-shadow: -4px 6px rgb(5, 5, 5);
-    color: #ffffff;
-    font-size: 30px;
-    font-weight: bold;
-    margin: 20px auto;
-    padding: 15px;
-    text-align: center;
-    width: 50%;
-      border-radius: 10px;
-  }
+.remaining-responses {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.remaining-responses .forum-response {
+  width: fit-content /* Fixed width for consistent sizing in the collapsed section */
+
+}

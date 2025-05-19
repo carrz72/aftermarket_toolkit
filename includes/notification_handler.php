@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/notification_handler.php';
+require_once __DIR__ . '/notification_email.php';
 
 /**
  * Send notification to user
@@ -41,7 +42,14 @@ function sendNotification($conn, $userId, $type, $senderId = null, $relatedId = 
             VALUES (?, ?, ?, ?, ?, ?, 0, NOW())";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("isisss", $userId, $type, $senderId, $relatedId, $content, $link);
-    return $stmt->execute();
+    $success = $stmt->execute();
+    
+    // Send email notification if the function exists
+    if (function_exists('sendNotificationEmail')) {
+        sendNotificationEmail($userId, $type, $content, $conn);
+    }
+    
+    return $success;
 }
 
 /**

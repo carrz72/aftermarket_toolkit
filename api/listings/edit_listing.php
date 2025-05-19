@@ -371,35 +371,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="menu">
-        <a href="../../index.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/home-icon.svg" alt="Home">
-            </span>
-            <span class="link-title">Home</span>
-        </a>
-
-        <a href="../../public/marketplace.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/market.svg" alt="Market">
-            </span>
-            <span class="link-title">Market</span>
-        </a>
-        
-        <a href="../../public/forum.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/forum-icon.svg" alt="Forum">
-            </span>
-            <span class="link-title">Forum</span>
-        </a>
-        
-        <a href="./view_listings.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/list-icon.svg" alt="My Listings">
-            </span>
-            <span class="link-title">My Listings</span>
-        </a>
-    </div>
+    
 
     <div class="edit-container">
         <h1>Edit Listing</h1>

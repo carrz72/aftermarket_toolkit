@@ -96,37 +96,12 @@ if ($thread_view && isset($_SESSION['user_id'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community Forum - Aftermarket Toolbox</title>
-  <link rel="stylesheet" href="./assets/css/forum.css">
-  <style>
-    /* Delete response button styling */
-    .delete-response-btn {
-      background-color: transparent;
-      border: none;
-      color: #dc3545;
-      cursor: pointer;
-      padding: 2px 4px;
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
+  <title>Community Forum - Aftermarket Toolbox</title>  <link rel="stylesheet" href="./assets/css/forum.css">
+  <link rel="stylesheet" href="./assets/css/notifications.css">
+  <!-- Font Awesome for notification icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="./assets/js/forum-responses.js" defer></script>
 
-    .delete-response-btn:hover {
-      opacity: 1;
-    }
-
-    .forum-response {
-      position: relative;
-    }
-
-    .delete-response-form {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-    }
-  </style>
 </head>
 <body>
 <!-- Navigation / Menu -->
@@ -145,12 +120,11 @@ if ($thread_view && isset($_SESSION['user_id'])) {
         <img src="./assets/images/market.svg" alt="Market">
       </span>
       <span class="link-title">Market</span>
-    </a>
-    <div class="dropdown-content">
-      <button class="value" onclick="window.location.href='./marketplace.php?view=explore';">Explore</button>
-      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">View Listings</button>
-      <button class="value" onclick="window.location.href='../api/listings/create_listing.php';">List Item</button>
-      <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+    </a>    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./marketplace.php?view=explore';"><img src="./assets/images/exploreicon.svg" alt="Explore">Explore</button>
+      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/view_listingicon.svg" alt="View Listings">View Listings</button>
+      <button class="value" onclick="window.location.href='../api/listings/create_listing.php';"><img src="./assets/images/list_itemicon.svg" alt="Create Listing">List Item</button>
+      <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
     </div>
   </div>
   
@@ -161,11 +135,10 @@ if ($thread_view && isset($_SESSION['user_id'])) {
         <img src="./assets/images/forum-icon.svg" alt="Forum">
       </span>
       <span class="link-title">Forum</span>
-    </a>
-    <div class="dropdown-content">
-      <button class="value" onclick="window.location.href='./forum.php?view=threads';">View Threads</button>
-      <button class="value" onclick="window.location.href='./forum.php?view=start_thread';">Start Thread</button>
-      <button class="value" onclick="window.location.href='./forum.php?view=post_question';">Post Question</button>
+    </a>    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./forum.php?view=threads';"><img src="./assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=start_thread';"><img src="./assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=post_question';"><img src="./assets/images/start_threadicon.svg" alt="Post Question">Post Question</button>
     </div>
   </div>
 
@@ -178,21 +151,19 @@ if ($thread_view && isset($_SESSION['user_id'])) {
       <span class="link-title">Profile</span>
     </a>
     <div id="profileDropdown" class="dropdown-content">
-    <?php if (isset($_SESSION['user_id'])): ?>
-      <button class="value" onclick="window.location.href='./profile.php';">
+    <?php if (isset($_SESSION['user_id'])): ?>      <button class="value" onclick="window.location.href='./profile.php';">
         <img src="./assets/images/profile-icon.svg" alt="Profile">Account
       </button>
-      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
-      <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-      <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
-      <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
+      <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/mylistingicon.svg" alt="Market">My Listings</button>
+      <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
+      <button class="value" onclick="window.location.href='./friends.php';"><img src="./assets/images/friendsicon.svg" alt="Friends">Friends</button>
+      <button class="value" onclick="window.location.href='./logout.php';"><img src="./assets/images/Log_Outicon.svg" alt="Logout">Logout</button>
     <?php else: ?>
       <button class="value" onclick="window.location.href='./login.php';">Login</button>
       <button class="value" onclick="window.location.href='./register.php';">Register</button>
     <?php endif; ?>
     </div>
   </div>
-
   <?php if (isset($_SESSION['user_id'])): ?>
     <a href="./chat.php" class="link">
       <span class="link-icon">
@@ -200,6 +171,36 @@ if ($thread_view && isset($_SESSION['user_id'])) {
       </span>
       <span class="link-title">Chat</span>
     </a>
+    
+    <!-- Notifications Dropdown -->
+    <div class="notifications-container">
+      <button id="notificationsBtn" class="notification-btn">
+        <i class="fas fa-bell"></i>
+        <?php 
+        // Get notification counts if the function exists
+        $notificationCount = 0;
+        if (function_exists('countUnreadNotifications')) {
+            $counts = countUnreadNotifications($conn, $_SESSION['user_id']);
+            $notificationCount = $counts['total'];
+        }
+        if ($notificationCount > 0): 
+        ?>
+        <span id="notification-badge"><?= $notificationCount ?></span>
+        <?php endif; ?>
+      </button>
+      <div id="notificationsDropdown" class="notifications-dropdown">
+        <div class="notifications-header">
+          <h3>Notifications</h3>
+          <?php if ($notificationCount > 0): ?>
+          <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
+          <?php endif; ?>
+        </div>
+        <div class="notifications-list">
+          <!-- Notifications will be loaded here via JavaScript -->
+          <div class="no-notifications">Loading notifications...</div>
+        </div>
+      </div>
+    </div>
   <?php endif; ?>
 </div>
 
@@ -228,13 +229,12 @@ if ($thread_view && isset($_SESSION['user_id'])) {
         <?php if (isset($_SESSION['user_id'])): ?>
             <div class="create-thread-section">
             <a href="create_forum.php" class="btn btn-post">Post a Thread</a>
-            </div>
-        <?php else: ?>
+            </div>        <?php else: ?>
           <p class="login-in">Please <a href="login.php">log in</a> to post a thread.</p>
         <?php endif; ?>
  
         <!-- Filter Form -->
-        <form method="GET" action="forum.php" style="margin-bottom: 20px;">
+        <form method="GET" action="forum.php" class="filter-form">
           <input type="text" name="search" placeholder="Search threads..." value="<?= htmlspecialchars($search) ?>">
           <select name="category">
             <option value="">All Categories</option>
@@ -275,8 +275,7 @@ if ($thread_view && isset($_SESSION['user_id'])) {
                 <?php if (isset($_SESSION['user_id'])): ?>
                   <div class="response-section">
                     <button class="response-btn" onclick="toggleResponseForm('form-<?= $thread_id ?>')">Add Response</button>
-                    
-                    <form id="form-<?= $thread_id ?>" class="response-form" style="display: none;" method="POST" action="../api/forum_threads/add_response.php">
+                      <form id="form-<?= $thread_id ?>" class="response-form" style="display: none;" method="POST" action="../api/forum_threads/forum_response_handler.php">
                       <input type="hidden" name="thread_id" value="<?= $thread_id ?>">
                       <textarea name="response_body" rows="3" placeholder="Type your response here..." required></textarea>
                       <button type="submit" class="submit-response">Submit</button>
@@ -471,7 +470,6 @@ if ($thread_view && isset($_SESSION['user_id'])) {
       container.classList.toggle('active');
     }, delay);
   }
-
   // Close all dropdowns with a delay when clicking outside
   document.addEventListener('click', function(e) {
     document.querySelectorAll('.profile-container').forEach(container => {
@@ -482,6 +480,209 @@ if ($thread_view && isset($_SESSION['user_id'])) {
       }
     });
   });
+  
+  // Initialize notification system
+  if (document.getElementById('notificationsBtn')) {
+    initNotificationSystem();
+    // Initial fetch
+    fetchNotifications();
+    // Poll for notifications every 60 seconds
+    setInterval(fetchNotifications, 60000);
+  }
+  
+  // Fetch notifications via AJAX
+  function fetchNotifications() {
+    fetch('./api/notifications.php')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          updateNotificationBadge(data.counts.total || 0);
+          updateNotificationDropdown(data.notifications || []);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching notifications:', error);
+      });
+  }
+  
+  // Update the notification badge count
+  function updateNotificationBadge(count) {
+    const badge = document.getElementById('notification-badge');
+    
+    if (!badge) return;
+    
+    if (count > 0) {
+      badge.style.display = 'inline-flex';
+      badge.textContent = count;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  
+  // Update the notification dropdown content
+  function updateNotificationDropdown(notifications) {
+    const list = document.querySelector('.notifications-list');
+    
+    if (!list) return;
+    
+    // If no notifications, show a message
+    if (!notifications || notifications.length === 0) {
+      list.innerHTML = '<div class="no-notifications">No new notifications</div>';
+      return;
+    }
+    
+    let html = '';
+    const maxToShow = 5;
+    
+    // Build notification items HTML
+    for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
+      const notification = notifications[i];
+      const isUnread = !notification.is_read;
+      const unreadClass = isUnread ? 'unread' : '';
+      
+      html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
+      
+      // Notification icon based on type
+      let iconClass = 'fa-bell';
+      switch (notification.type) {
+        case 'friend_request': iconClass = 'fa-user-plus'; break;
+        case 'message': iconClass = 'fa-envelope'; break;
+        case 'forum_response': iconClass = 'fa-comments'; break;
+        case 'listing_comment': iconClass = 'fa-tag'; break;
+      }
+      
+      html += `<div class="notification-icon"><i class="fas ${iconClass}"></i></div>`;
+      html += '<div class="notification-content">';
+      html += `<div class="notification-text">${notification.content}</div>`;
+      html += `<div class="notification-time">${formatTimeAgo(notification.created_at)}</div>`;
+      html += '</div>';
+      
+      if (isUnread) {
+        html += '<div class="notification-mark-read"><i class="fas fa-check"></i></div>';
+      }
+      
+      html += `<a href="${getNotificationLink(notification.type, notification.related_id)}" class="notification-link"></a>`;
+      html += '</div>';
+    }
+    
+    // If there are more notifications than we're showing, add a "view all" link
+    if (notifications.length > maxToShow) {
+      html += '<div class="notification-item show-all">';
+      html += `<a href="./notifications.php">View all notifications</a>`;
+      html += '</div>';
+    }
+    
+    list.innerHTML = html;
+  }
+  
+  // Get the appropriate link for a notification
+  function getNotificationLink(type, relatedId) {
+    switch(type) {
+      case 'friend_request':
+        return './friends.php';
+      case 'message':
+        return relatedId ? `./chat.php?chat=${relatedId}` : './chat.php';
+      case 'forum_response':
+        return relatedId ? `./forum.php?thread=${relatedId}` : './forum.php';
+      case 'listing_comment':
+        return relatedId ? `./marketplace.php?listing=${relatedId}` : './marketplace.php';
+      default:
+        return './notifications.php';
+    }
+  }
+  
+  // Format timestamp as time ago text
+  function formatTimeAgo(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) {
+      return 'just now';
+    }
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+      return minutes + ' minute' + (minutes !== 1 ? 's' : '') + ' ago';
+    }
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      return hours + ' hour' + (hours !== 1 ? 's' : '') + ' ago';
+    }
+    
+    const days = Math.floor(hours / 24);
+    if (days < 30) {
+      return days + ' day' + (days !== 1 ? 's' : '') + ' ago';
+    }
+    
+    const months = Math.floor(days / 30);
+    if (months < 12) {
+      return months + ' month' + (months !== 1 ? 's' : '') + ' ago';
+    }
+    
+    return Math.floor(months / 12) + ' year' + (Math.floor(months / 12) !== 1 ? 's' : '') + ' ago';
+  }
+  
+  // Initialize notification system
+  function initNotificationSystem() {
+    const notificationsBtn = document.getElementById('notificationsBtn');
+    const notificationsDropdown = document.getElementById('notificationsDropdown');
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    
+    // Toggle dropdown when clicking on the notification button
+    if (notificationsBtn) {
+      notificationsBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        notificationsDropdown.classList.toggle('show');
+        
+        // Fetch fresh notifications when opening dropdown
+        if (notificationsDropdown.classList.contains('show')) {
+          fetchNotifications();
+        }
+      });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (notificationsDropdown && 
+          !notificationsBtn.contains(e.target) && 
+          !notificationsDropdown.contains(e.target)) {
+        notificationsDropdown.classList.remove('show');
+      }
+    });
+    
+    // Mark all notifications as read
+    if (markAllReadBtn) {
+      markAllReadBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        fetch('./api/notifications.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'action=mark_all_read'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update UI
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+              item.classList.remove('unread');
+            });
+            document.querySelectorAll('.notification-mark-read').forEach(btn => {
+              btn.remove();
+            });
+            updateNotificationBadge(0);
+          }
+        })
+        .catch(error => console.error('Error marking all as read:', error));
+      });
+    }
+  }
   
   // Toggle response form visibility
   function toggleResponseForm(formId) {
@@ -504,8 +705,7 @@ if ($thread_view && isset($_SESSION['user_id'])) {
       button.textContent = 'See All Responses';
     }
   }
-  
-  // Toggle response text expansion
+    // Toggle response text expansion
   function toggleResponseText(button) {
     const responseBody = button.closest('.response-content').querySelector('.response-body');
     const fadeOverlay = button.closest('.response-content').querySelector('.fade-overlay');

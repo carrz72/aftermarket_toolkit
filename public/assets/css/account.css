@@ -24,6 +24,7 @@ body {
     padding: 0.8rem;
     position: relative;
     border-radius: 15px;
+    max-width: 1200px;
 }
 
 .link {

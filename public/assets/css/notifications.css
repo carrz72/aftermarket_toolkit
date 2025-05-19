@@ -1,75 +1,95 @@
 /**
  * Notification System Styles
  * CSS for styling the notification system components
+ * 
+ * Organized to match the structure in notifications.php and index.php
  */
 
-/* Notification Container */
-.notification-container {
-    position: relative;
-    display: inline-block;
+/* Variables for consistent styling */
+:root {
+  --primary-color: #189dc5;
+  --primary-hover: #0f758e;
+  --dark-bg: #262626;
+  --light-bg: #ffffff;
+  --text-dark: #333333;
+  --text-light: #ffffff;
+  --text-muted: #666666;
+  --border-color: #dddddd;
+  --notification-unread: rgba(0, 123, 255, 0.05);
+  --notification-hover: #f5f5f5;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --border-radius-sm: 3px;
+  --border-radius-md: 4px;
+  --border-radius-lg: 5px;
 }
 
+/* ========================================================================
+   1. Navbar Notification Components (Appear in navigation.php)
+======================================================================== */
+/* Notification Container - Appears in the menu */
+.notification-container,
 .notifications-container {
   position: relative;
   display: inline-block;
- top: 5px;
+  top: 5px;
 }
 
-/* Notification Button */
-.notification-btn {
+/* Notification Button - Interactive trigger in the menu bar */
+.notification-btn,
+#notificationsBtn {
   position: relative;
   background: none;
   border: none;
   font-size: 20px;
   color: #333;
   cursor: pointer;
-  padding: 5px;
+  padding: 5px 8px;
   display: inline-flex;
-  align-items: end;
-  justify-content: end;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
 }
 
-.notification-btn:focus {
+.notification-btn:focus,
+#notificationsBtn:focus {
   outline: none;
 }
 
-/* Notification Badge */
-.notification-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background-color: #ff4444;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 10px;
-    font-weight: bold;
-    display: none;
+#notificationsBtn:hover {
+  background-color: rgba(0,0,0,0.05);
 }
 
+#notificationsBtn i {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+}
+
+/* Notification Badge - Numeric indicator for unread notifications */
+.notification-badge,
 #notification-badge {
   position: absolute;
   top: -5px;
   right: -5px;
   min-width: 18px;
   height: 18px;
-  border-radius: 90px;
+  border-radius: 50%;
   background-color: #ff3b30;
   color: white;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* Notification Dropdown */
-
-
-.notification-dropdown.show {
-    display: block;
-}
-
+/* ========================================================================
+   2. Dropdown Menu (Appears when clicking notification button)
+======================================================================== */
+/* Notifications Dropdown - Container for notification list */
 .notifications-dropdown {
   position: absolute;
   top: 100%;
@@ -82,28 +102,17 @@
   z-index: 1000;
   display: none;
   margin-top: 5px;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .notifications-dropdown.show {
   display: block;
 }
 
-/* Notification Header */
+/* Notifications Header - Contains title and 'mark all read' button */
+.notifications-header,
 .notification-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    border-bottom: 1px solid #eee;
-}
-
-.notification-header h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.notifications-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -114,29 +123,18 @@
   border-top-right-radius: 5px;
 }
 
-.notifications-header h3 {
+.notifications-header h3,
+.notification-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
 }
 
-.mark-all-read {
-    background: none;
-    border: none;
-    color: #4a89dc;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 0;
-}
-
-.mark-all-read:hover {
-    text-decoration: underline;
-}
-
+/* Mark-all-read button */
 .mark-all-read {
   background-color: transparent;
   border: none;
-  color: #007bff;
+  color: var(--primary-color);
   cursor: pointer;
   font-size: 13px;
   padding: 5px;
@@ -149,71 +147,39 @@
   text-decoration: underline;
 }
 
-/* Notification List */
-.notification-list {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
+/* Notifications List */
 .notifications-list {
   max-height: 400px;
   overflow-y: auto;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 /* No Notifications Message */
-.no-notifications {
-    padding: 20px;
-    text-align: center;
-    color: #666;
-    font-style: italic;
-}
-
 .no-notifications {
   padding: 25px 15px;
   text-align: center;
   color: #6c757d;
   font-size: 14px;
+  font-style: italic;
 }
 
+/* ========================================================================
+   3. Notification Items (Individual notifications in dropdown)
+======================================================================== */
 /* Notification Item */
-.notification-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee;
-    position: relative;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.notification-item:last-child {
-    border-bottom: none;
-}
-
-.notification-item:hover {
-    background-color: #f9f9f9;
-}
-
-.notification-item.unread {
-    background-color: #f0f7ff;
-}
-
-.notification-item.unread:hover {
-    background-color: #e6f2ff;
-}
-
 .notification-item {
   display: flex;
   align-items: flex-start;
   padding: 12px 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   position: relative;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
 }
 
 .notification-item:hover {
-  background-color: #f5f5f5;
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .notification-item:last-child {
@@ -221,67 +187,16 @@
 }
 
 .notification-item.unread {
-  background-color: rgba(0, 123, 255, 0.05);
+  background-color: rgba(24, 157, 197, 0.05);
 }
 
 .notification-item.unread:hover {
-  background-color: rgba(0, 123, 255, 0.1);
-}
-
-/* Show All Link */
-.notification-item.show-all {
-    text-align: center;
-    padding: 10px;
-}
-
-.notification-item.show-all a {
-    color: #4a89dc;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.notification-item.show-all a:hover {
-    text-decoration: underline;
-}
-
-.notification-item.show-all {
-  text-align: center;
-  padding: 12px;
-  background-color: #f8f9fa;
-}
-
-.notification-item.show-all a {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.notification-item.show-all a:hover {
-  text-decoration: underline;
+  background-color: rgba(24, 157, 197, 0.1);
 }
 
 /* Notification Icon */
 .notification-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px;
-    flex-shrink: 0;
-}
-
-.notification-icon i {
-    font-size: 16px;
-    color: #666;
-}
-
-.notification-icon {
-  margin-right: 15px;
+  margin-right: 10px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -290,46 +205,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--primary-color);
+  text-align: center;
 }
 
+.notification-icon i,
 .notification-icon .fas {
-  color: #007bff;
-  font-size: 16px;
+  font-size: 1.1rem;
 }
 
-/* Notification types with specific colors */
-.notification-item[data-type="friend_request"] .notification-icon {
-    background-color: #e8f5e9;
-}
-
-.notification-item[data-type="friend_request"] .notification-icon i {
-    color: #4caf50;
-}
-
-.notification-item[data-type="message"] .notification-icon {
-    background-color: #e3f2fd;
-}
-
-.notification-item[data-type="message"] .notification-icon i {
-    color: #2196f3;
-}
-
-.notification-item[data-type="forum_response"] .notification-icon {
-    background-color: #fff8e1;
-}
-
-.notification-item[data-type="forum_response"] .notification-icon i {
-    color: #ffa000;
-}
-
-.notification-item[data-type="listing_comment"] .notification-icon {
-    background-color: #f3e5f5;
-}
-
-.notification-item[data-type="listing_comment"] .notification-icon i {
-    color: #9c27b0;
-}
-
+/* Icon color variations by notification type */
 .notification-icon .fa-envelope {
   color: #17a2b8;
 }
@@ -344,176 +229,68 @@
 
 /* Notification Content */
 .notification-content {
-    flex-grow: 1;
-    min-width: 0;
+  flex: 1;
 }
 
 .notification-text {
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #333;
-    line-height: 1.4;
-    word-break: break-word;
-}
-
-.notification-time {
-    font-size: 12px;
-    color: #999;
-}
-
-.notification-content {
-  flex-grow: 1;
-  padding-right: 10px;
-}
-
-.notification-text {
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: #333;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+  font-size: 0.9em;
   line-height: 1.4;
 }
 
 .notification-time {
-  font-size: 12px;
-  color: #777;
+  color: var(--text-muted);
+  font-size: 0.8em;
 }
 
 /* Mark as Read Button */
 .notification-mark-read {
-    margin-left: 10px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.2s;
-}
-
-.notification-mark-read:hover {
-    background-color: #e0e0e0;
-}
-
-.notification-mark-read i {
-    font-size: 12px;
-    color: #666;
-}
-
-.notification-mark-read {
-  width: 26px;
-  height: 26px;
   margin-left: 10px;
-  border-radius: 50%;
-  background-color: #f1f3f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color 0.2s;
-}
-
-.notification-mark-read .fas {
-  color: #6c757d;
-  font-size: 12px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  align-self: center;
+  position: relative;
+  z-index: 2;
 }
 
 .notification-mark-read:hover {
-  background-color: #007bff;
+  color: var(--primary-color);
 }
 
-.notification-mark-read:hover .fas {
-  color: #fff;
-}
-
-/* Full-width link over notification for clickability */
-.notification-link {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
-}
-
+/* Notification Link */
 .notification-link {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  cursor: pointer;
   z-index: 1;
 }
 
-.notification-mark-read {
-  position: relative;
-  z-index: 2; /* Above the notification-link to be clickable */
+/* Show All Link at bottom of dropdown */
+.notification-item.show-all {
+  text-align: center;
+  padding: 10px;
+  background-color: #f8f9fa;
 }
 
-/* Notification Settings Page Styles */
-.notification-settings-section {
-    margin-bottom: 30px;
+.notification-item.show-all a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
 }
 
-.notification-settings-section h2 {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+.notification-item.show-all a:hover {
+  text-decoration: underline;
 }
 
-.notification-type-group {
-    margin-bottom: 20px;
-}
-
-.notification-type-group h3 {
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.notification-option {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.notification-option input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-.notification-option label {
-    font-size: 14px;
-    cursor: pointer;
-}
-
-/* Responsive styles */
-@media screen and (max-width: 480px) {
-    .notification-dropdown {
-        width: 300px;
-        right: -100px;
-    }
-    
-    .notification-text {
-        font-size: 13px;
-    }
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 576px) {
-  .notifications-dropdown {
-    position: fixed;
-    top: 60px;
-    right: 0;
-    left: 0;
-    width: 100%;
-    border-radius: 0;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
-  }
-}
-
-/* Notifications Page Specific Styles */
+/* ========================================================================
+   4. Notifications Page Specific Styles
+======================================================================== */
 .notifications-page {
   max-width: 800px;
   margin: 0 auto;
@@ -542,6 +319,88 @@
   display: inline-block;
 }
 
+/* Filter Container */
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filter-link {
+  padding: 8px 15px;
+  background-color: #f1f3f5;
+  color: #495057;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.filter-link:hover {
+  background-color: #e9ecef;
+}
+
+.filter-link.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Notification Sender (appears in notifications.php) */
+.notification-sender {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.sender-pic {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+.sender-name {
+  font-weight: 600;
+  color: #343a40;
+  font-size: 14px;
+}
+
+/* Notification Actions */
+.notification-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #adb5bd;
+  margin-bottom: 20px;
+}
+
+.empty-state h2 {
+  margin: 0 0 10px;
+  color: #495057;
+}
+
+.empty-state p {
+  color: #868e96;
+  margin: 0;
+}
+
+/* ========================================================================
+   5. Button & UI Element Styles
+======================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -606,73 +465,6 @@
   color: #155724;
 }
 
-.notifications-container-page {
-  background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.notifications-list-page .notification-item {
-  padding: 16px 20px;
-  cursor: pointer;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.empty-icon {
-  font-size: 48px;
-  color: #adb5bd;
-  margin-bottom: 20px;
-}
-
-.empty-state h2 {
-  margin: 0 0 10px;
-  color: #495057;
-}
-
-.empty-state p {
-  color: #868e96;
-  margin: 0;
-}
-
-.notification-sender {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.sender-pic {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  margin-right: 8px;
-  object-fit: cover;
-}
-
-.sender-name {
-  font-weight: 600;
-  color: #343a40;
-  font-size: 14px;
-}
-
-.notification-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-  flex-shrink: 0;
-  z-index: 2; /* Ensure buttons are above clickable area */
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  position: relative;
-}
-
 /* Pagination */
 .pagination {
   display: flex;
@@ -696,7 +488,7 @@
 }
 
 .pagination-link.active {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: #fff;
 }
 
@@ -705,7 +497,20 @@
   color: #495057;
 }
 
+/* ========================================================================
+   6. Responsive Styles
+======================================================================== */
 @media (max-width: 576px) {
+  .notifications-dropdown {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+  }
+  
   .notifications-page {
     padding: 15px;
   }
@@ -726,5 +531,11 @@
   
   .notification-item {
     padding: 12px 15px;
+  }
+  
+  .filter-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 10px;
   }
 }

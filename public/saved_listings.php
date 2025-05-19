@@ -77,27 +77,27 @@ $result = $stmt->get_result();
                     <img src="./assets/images/market.svg" alt="Market">
                 </span>
                 <span class="link-title">Market</span>
-            </a>
-            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='./marketplace.php?view=explore';">Explore</button>
-                <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
-                <button class="value" onclick="window.location.href='../api/listings/create_listing.php';">List Item</button>
-                <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
+            </a>            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='./marketplace.php?view=explore';"><img src="./assets/images/exploreicon.svg" alt="Explore">Explore</button>
+                <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/view_listingicon.svg" alt="View Listings">My Listings</button>
+                <button class="value" onclick="window.location.href='../api/listings/create_listing.php';"><img src="./assets/images/list_itemicon.svg" alt="Create Listing">List Item</button>
+                <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
             </div>
         </div>
         
         <!-- Forum dropdown -->
         <div class="profile-container">
-            <a href="#" class="link" onclick="toggleDropdown(this, event)">
-                <span class="link-icon">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">                <span class="link-icon">
                     <img src="./assets/images/forum-icon.svg" alt="Forum">
+                    <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
+                        <span class="notification-badge forum"><?= $notificationCounts['forum_responses'] ?></span>
+                    <?php endif; ?>
                 </span>
                 <span class="link-title">Forum</span>
-            </a>
-            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='./forum.php?view=threads';">View Threads</button>
-                <button class="value" onclick="window.location.href='./forum.php?view=start_thread';">Start Thread</button>
-                <button class="value" onclick="window.location.href='./forum.php?view=post_question';">Ask Question</button>
+            </a>            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='./forum.php?view=threads';"><img src="./assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
+                <button class="value" onclick="window.location.href='./forum.php?view=start_thread';"><img src="./assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
+                <button class="value" onclick="window.location.href='./forum.php?view=post_question';"><img src="./assets/images/start_threadicon.svg" alt="Post Question">Ask Question</button>
             </div>
         </div>
 
@@ -113,21 +113,26 @@ $result = $stmt->get_result();
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <button class="value" onclick="window.location.href='./profile.php';">
                         <img src="./assets/images/profile-icon.svg" alt="Profile">Account
+                    </button>                    <button class="value" onclick="window.location.href='../api/listings/view_listings.php';"><img src="./assets/images/mylistingicon.svg" alt="Market">My Listings</button>
+                    <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved">Saved Items</button>
+                    <button class="value" onclick="window.location.href='./friends.php';"><img src="./assets/images/friendsicon.svg" alt="Friends">Friends
+                        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['friend_requests']) && $notificationCounts['friend_requests'] > 0): ?>
+                            <span class="notification-badge friends"><?= $notificationCounts['friend_requests'] ?></span>
+                        <?php endif; ?>
                     </button>
-                    <button class="value" onclick="window.location.href='../api/listings/view_listings.php';">My Listings</button>
-                    <button class="value" onclick="window.location.href='./saved_listings.php';">Saved Items</button>
-      <button class="value" onclick="window.location.href='./friends.php';">Friends</button>
-                    <button class="value" onclick="window.location.href='./logout.php';">Logout</button>
+                    <button class="value" onclick="window.location.href='./logout.php';"><img src="./assets/images/Log_Outicon.svg" alt="Logout">Logout</button>
                 <?php else: ?>
                     <button class="value" onclick="window.location.href='./login.php';">Login</button>
                     <button class="value" onclick="window.location.href='./register.php';">Register</button>
                 <?php endif; ?>
             </div>
         </div>
-          <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="./chat.php" class="link">
+          <?php if (isset($_SESSION['user_id'])): ?>            <a href="./chat.php" class="link">
                 <span class="link-icon">
                     <img src="./assets/images/chat-icon.svg" alt="Chat">
+                    <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['messages']) && $notificationCounts['messages'] > 0): ?>
+                        <span class="notification-badge messages"><?= $notificationCounts['messages'] ?></span>
+                    <?php endif; ?>
                 </span>
                 <span class="link-title">Chat</span>
             </a>

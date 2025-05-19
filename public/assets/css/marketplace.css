@@ -188,6 +188,73 @@ body {
     margin-right: 8px;
   }
 
+  /* Notifications Container */
+.notifications-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Notification Button and Badge */
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 8px;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.notification-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Notification Badge */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #f44336;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Button styling */
+#notificationsBtn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+#notificationsBtn i {
+    font-size: 1.25rem;
+    color:#17a2b8;
+}
+
+#notificationsBtn:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+
+.notification-icon i {
+  font-size: 1.1rem;
+}
+
   
 /* ========================================================================
     Menu Item Dropdown Styles

@@ -54,10 +54,14 @@ if (isset($_SESSION['user_id'])) {
       <span class="link-title">Market</span>
     </a>
     <div class="dropdown-content">
-      <button class="value" onclick="window.location.href='<?= $root_path ?>public/marketplace.php?view=explore';">Explore</button>
-      <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/view_listings.php';">View Listings</button>
-      <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/create_listing.php';">List Item</button>
-      <button class="value" onclick="window.location.href='<?= $root_path ?>public/saved_listings.php';">Saved Items</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>public/marketplace.php?view=explore';"><img src="<?= $root_path ?>public/assets/images/exploreicon.svg" alt="Explore">
+        Explore</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/view_listings.php';"><img src="<?= $root_path ?>public/assets/images/view_listingicon.svg" alt="View Listings">
+        View Listings</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/create_listing.php';"><img src="<?= $root_path ?>public/assets/images/list_itemicon.svg" alt="Create Listing">
+        List Item</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>public/saved_listings.php';"><img src="<?= $root_path ?>public/assets/images/savedicons.svg" alt="Saved">
+        Saved Items</button>
     </div>
   </div>
   
@@ -73,9 +77,11 @@ if (isset($_SESSION['user_id'])) {
       <span class="link-title">Forum</span>
     </a>
     <div class="dropdown-content">
-      <button class="value" onclick="window.location.href='<?= $root_path ?>public/forum.php?view=threads';">View Threads</button>
-      <button class="value" onclick="window.location.href='<?= $root_path ?>public/forum.php?view=start_thread';">Start Thread</button>
-      <button class="value" onclick="window.location.href='<?= $root_path ?>public/forum.php?view=post_question';">Post Question</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>public/forum.php?view=threads';"><img src="<?= $root_path ?>public/assets/images/view_threadicon.svg" alt="Forum"> View Threads</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>public/forum.php?view=start_thread';"><img src="<?= $root_path ?>public/assets/images/start_threadicon.svg" alt="Start Thread">
+        Start Thread</button>
+      <button class="value" onclick="window.location.href='<?= $root_path ?>public/forum.php?view=post_question';"><img src="<?= $root_path ?>public/assets/images/start_threadicon.svg" alt="Post Question">
+        Post Question</button>
     </div>
   </div>
 
@@ -92,14 +98,18 @@ if (isset($_SESSION['user_id'])) {
         <button class="value" onclick="window.location.href='<?= $root_path ?>public/profile.php';">
           <img src="<?= $root_path ?>public/assets/images/profile-icon.svg" alt="Profile">Account
         </button>
-        <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/view_listings.php';">My Listings</button>
-        <button class="value" onclick="window.location.href='<?= $root_path ?>public/saved_listings.php';">Saved Items</button>        <button class="value" onclick="window.location.href='<?= $root_path ?>public/friends.php';">
+        <button class="value" onclick="window.location.href='<?= $root_path ?>api/listings/view_listings.php';">
+<img src="<?= $root_path ?>public/assets/images/mylistingicon.svg" alt="Market">My Listings</button>
+        </button>
+        <button class="value" onclick="window.location.href='<?= $root_path ?>public/saved_listings.php';"><img src="<?= $root_path ?>public/assets/images/savedicons.svg" alt="Saved">
+          Saved Items</button><button class="value" onclick="window.location.href='<?= $root_path ?>public/friends.php';"><img src="<?= $root_path ?>public/assets/images/friendsicon.svg" alt="Friends">
           Friends
           <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['friend_requests']) && $notificationCounts['friend_requests'] > 0): ?>
             <?= getNotificationBadgeHTML($notificationCounts['friend_requests'], 'friends') ?>
           <?php endif; ?>
         </button>
-        <button class="value" onclick="window.location.href='<?= $root_path ?>public/logout.php';">Logout</button>
+        <button class="value" onclick="window.location.href='<?= $root_path ?>public/logout.php';"
+        ><img src="<?= $root_path ?>public/assets/images/Log_Outicon.svg" alt="Logout">Logout</button>
       <?php else: ?>
         <button class="value" onclick="window.location.href='<?= $root_path ?>public/login.php';">Login</button>
         <button class="value" onclick="window.location.href='<?= $root_path ?>public/register.php';">Register</button>

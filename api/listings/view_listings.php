@@ -76,27 +76,27 @@ $current_section = 'market';
                     <img src="../../public/assets/images/market.svg" alt="Market">
                 </span>
                 <span class="link-title">Market</span>
-            </a>
-            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='../../public/marketplace.php?view=explore';">Explore</button>
-                <button class="value" onclick="window.location.href='../listings/view_listings.php';">My Listings</button>
-                <button class="value" onclick="window.location.href='../listings/create_listing.php';">List Item</button>
-                <button class="value" onclick="window.location.href='../../public/saved_listings.php';">Saved Items</button>
+            </a>            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='../../public/marketplace.php?view=explore';"><img src="../../public/assets/images/exploreicon.svg" alt="Explore">Explore</button>
+                <button class="value" onclick="window.location.href='../listings/view_listings.php';"><img src="../../public/assets/images/view_listingicon.svg" alt="View Listings">My Listings</button>
+                <button class="value" onclick="window.location.href='../listings/create_listing.php';"><img src="../../public/assets/images/list_itemicon.svg" alt="Create Listing">List Item</button>
+                <button class="value" onclick="window.location.href='../../public/saved_listings.php';"><img src="../../public/assets/images/savedicons.svg" alt="Saved">Saved Items</button>
             </div>
         </div>
         
         <!-- Forum dropdown -->
         <div class="profile-container">
-            <a href="#" class="link" onclick="toggleDropdown(this, event)">
-                <span class="link-icon">
+            <a href="#" class="link" onclick="toggleDropdown(this, event)">                <span class="link-icon">
                     <img src="../../public/assets/images/forum-icon.svg" alt="Forum">
+                    <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
+                        <span class="notification-badge forum"><?= $notificationCounts['forum_responses'] ?></span>
+                    <?php endif; ?>
                 </span>
                 <span class="link-title">Forum</span>
-            </a>
-            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='../../public/forum.php?view=threads';">View Threads</button>
-                <button class="value" onclick="window.location.href='../../public/forum.php?view=start_thread';">Start Thread</button>
-                <button class="value" onclick="window.location.href='../../public/forum.php?view=post_question';">Post Question</button>
+            </a>            <div class="dropdown-content">
+                <button class="value" onclick="window.location.href='../../public/forum.php?view=threads';"><img src="../../public/assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
+                <button class="value" onclick="window.location.href='../../public/forum.php?view=start_thread';"><img src="../../public/assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
+                <button class="value" onclick="window.location.href='../../public/forum.php?view=post_question';"><img src="../../public/assets/images/start_threadicon.svg" alt="Post Question">Post Question</button>
             </div>
         </div>
 
@@ -109,14 +109,17 @@ $current_section = 'market';
                 <span class="link-title">Profile</span>
             </a>
             <div class="dropdown-content">
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <button class="value" onclick="window.location.href='../../public/profile.php';">
+                <?php if (isset($_SESSION['user_id'])): ?>                    <button class="value" onclick="window.location.href='../../public/profile.php';">
                         <img src="../../public/assets/images/profile-icon.svg" alt="Profile">Account
                     </button>
-                    <button class="value" onclick="window.location.href='../listings/view_listings.php';">My Listings</button>
-                    <button class="value" onclick="window.location.href='../../public/saved_listings.php';">Saved Items</button>
-                    <button class="value" onclick="window.location.href='../../public/friends.php';">Friends</button>
-                    <button class="value" onclick="window.location.href='../../public/logout.php';">Logout</button>
+                    <button class="value" onclick="window.location.href='../listings/view_listings.php';"><img src="../../public/assets/images/mylistingicon.svg" alt="Market">My Listings</button>
+                    <button class="value" onclick="window.location.href='../../public/saved_listings.php';"><img src="../../public/assets/images/savedicons.svg" alt="Saved">Saved Items</button>
+                    <button class="value" onclick="window.location.href='../../public/friends.php';"><img src="../../public/assets/images/friendsicon.svg" alt="Friends">Friends
+                    <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['friend_requests']) && $notificationCounts['friend_requests'] > 0): ?>
+                        <span class="notification-badge friends"><?= $notificationCounts['friend_requests'] ?></span>
+                    <?php endif; ?>
+                    </button>
+                    <button class="value" onclick="window.location.href='../../public/logout.php';"><img src="../../public/assets/images/Log_Outicon.svg" alt="Logout">Logout</button>
                 <?php else: ?>
                     <button class="value" onclick="window.location.href='../../public/login.php';">Login</button>
                     <button class="value" onclick="window.location.href='../../public/register.php';">Register</button>
