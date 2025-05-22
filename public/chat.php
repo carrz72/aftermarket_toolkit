@@ -12,6 +12,50 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
+// Mark message notifications as read when user visits the chat page
+if (isset($_SESSION['user_id'])) {
+    // Mark message notifications as read
+    $markMessageNotificationsReadStmt = $conn->prepare("
+        UPDATE notifications 
+        SET is_read = 1 
+        WHERE user_id = ? AND type = 'message' AND is_read = 0
+    ");
+    $markMessageNotificationsReadStmt->bind_param("i", $userId);
+    $markMessageNotificationsReadStmt->execute();
+    
+    // Update the notification counts after marking as read
+    if ($markMessageNotificationsReadStmt->affected_rows > 0) {
+        // Recalculate notification counts
+        $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+        $unreadStmt = $conn->prepare($unreadQuery);
+        $unreadStmt->bind_param("i", $userId);
+        $unreadStmt->execute();
+        $unreadRow = $unreadStmt->get_result()->fetch_assoc();
+        $unreadCount = $unreadRow['count'];
+        
+        // Get counts by type
+        $countsByType = [];
+        $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
+        $typesStmt = $conn->prepare($typesQuery);
+        $typesStmt->bind_param("i", $userId);
+        $typesStmt->execute();
+        $typesResult = $typesStmt->get_result();
+        
+        while ($row = $typesResult->fetch_assoc()) {
+            $countsByType[$row['type']] = $row['count'];
+        }
+        
+        $notificationCounts = [
+            'total' => $unreadCount,
+            'messages' => 0, // Set to 0 since we just marked all message notifications as read
+            'friend_requests' => $countsByType['friend_request'] ?? 0,
+            'forum_responses' => $countsByType['forum_response'] ?? 0
+        ];
+    }
+}
+
+$userId = $_SESSION['user_id'];
+
 // Check if the user was redirected from a listing page
 $listingId = isset($_GET['listing_id']) ? (int)$_GET['listing_id'] : null;
 $listingTitle = isset($_GET['listing_title']) ? urldecode($_GET['listing_title']) : null;

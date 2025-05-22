@@ -16,16 +16,42 @@ $userId = $_SESSION['user_id'];
 
 // Get notification counts if user is logged in
 $notificationCounts = [
+    'total' => 0,
     'messages' => 0,
     'friend_requests' => 0,
-    'forum_responses' => 0,
-    'total' => 0
+    'forum_responses' => 0
 ];
 
-if (function_exists('countUnreadNotifications')) {
-    $notificationCounts = countUnreadNotifications($conn, $userId);
-} else if (function_exists('getNotificationCounts')) {
-    $notificationCounts = getNotificationCounts($userId, $conn);
+if (isset($_SESSION['user_id'])) {
+    // Get notification counts
+    $userId = $_SESSION['user_id'];
+    
+    // Get unread notification count
+    $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+    $unreadStmt = $conn->prepare($unreadQuery);
+    $unreadStmt->bind_param("i", $userId);
+    $unreadStmt->execute();
+    $unreadRow = $unreadStmt->get_result()->fetch_assoc();
+    $unreadCount = $unreadRow['count'];
+    
+    // Get counts by type
+    $countsByType = [];
+    $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
+    $typesStmt = $conn->prepare($typesQuery);
+    $typesStmt->bind_param("i", $userId);
+    $typesStmt->execute();
+    $typesResult = $typesStmt->get_result();
+    
+    while ($row = $typesResult->fetch_assoc()) {
+        $countsByType[$row['type']] = $row['count'];
+    }
+    
+    $notificationCounts = [
+        'total' => $unreadCount,
+        'messages' => $countsByType['message'] ?? 0,
+        'friend_requests' => $countsByType['friend_request'] ?? 0,
+        'forum_responses' => $countsByType['forum_response'] ?? 0
+    ];
 }
 
 // Fetch user listings
@@ -126,14 +152,31 @@ $current_section = 'market';
                 <?php endif; ?>
             </div>
         </div>
-          <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../../public/chat.php" class="link">
+          <?php if (isset($_SESSION['user_id'])): ?>            <a href="../../public/chat.php" class="link">
                 <span class="link-icon">
                     <img src="../../public/assets/images/chat-icon.svg" alt="Chat">
+                    <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['messages']) && $notificationCounts['messages'] > 0): ?>
+                        <span class="notification-badge messages"><?= $notificationCounts['messages'] ?></span>
+                    <?php endif; ?>
                 </span>
                 <span class="link-title">Chat</span>
             </a>
-            
+                <div class="profile-container">
+    <a href="#" class="link <?= $current_section === 'jobs' ? 'active' : '' ?>" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="../../public/assets/images/job-icon.svg" alt="Jobs">
+      </span>
+      <span class="link-title">Jobs</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='../../public/jobs.php';"><img src="../../public/assets/images/exploreicon.svg" alt="Explore">
+        Explore</button>
+      <button class="value" onclick="window.location.href='../../public/jobs.php?action=post';"><img src="../../public/assets/images/post_job_icon.svg" alt="Create Job">
+        Post Job</button>
+      <button class="value" onclick="window.location.href='../../public/jobs.php?action=my_applications';"><img src="../../public/assets/images/my_applications_icon.svg" alt="My Applications">
+        My Applications</button>
+    </div>
+  </div>
             <!-- Notifications Dropdown -->
             <div class="notifications-container">
               <button id="notificationsBtn" class="notification-btn">
@@ -148,10 +191,12 @@ $current_section = 'market';
                   <?php if (isset($notificationCounts) && $notificationCounts['total'] > 0): ?>
                     <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
                   <?php endif; ?>
-                </div>
-                <div class="notifications-list">
+                </div>                <div class="notifications-list">
                   <!-- Notifications will be loaded here via JavaScript -->
                   <div class="no-notifications">Loading notifications...</div>
+                </div>
+                <div class="notifications-footer">
+                  <a href="../../public/notifications.php" class="view-all-link">See All Notifications</a>
                 </div>
               </div>
             </div>
@@ -301,25 +346,49 @@ $current_section = 'market';
             // Poll for new notifications every 60 seconds
             setInterval(fetchNotifications, 60000);
         }
-        
-        // Fetch notifications via AJAX
+          // Fetch notifications via AJAX
         function fetchNotifications() {
             fetch('../../public/api/notifications.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Notification data:', data);
                     if (data.success) {
+                        // Make sure to update both the dropdown and any notification badges in the navigation
                         updateNotificationBadge(data.counts.total || 0);
                         updateNotificationDropdown(data.notifications || []);
+                        
+                        // Also update the forum, message, and friend request badges if they exist
+                        updateSpecificBadge('forum_responses', data.counts.forum_responses || 0);
+                        updateSpecificBadge('messages', data.counts.messages || 0);
+                        updateSpecificBadge('friend_requests', data.counts.friend_requests || 0);
+                    } else {
+                        console.error('Notification fetch failed:', data.message);
                     }
                 })
-                .catch(error => console.error('Error fetching notifications:', error));
-        }
-        
-        // Update the notification badge count
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
+        }// Update the notification badge count
         function updateNotificationBadge(count) {
             const badge = document.getElementById('notification-badge');
             
-            if (!badge) return;
+            if (!badge) {
+                // If badge doesn't exist yet, create it
+                const notificationBtn = document.getElementById('notificationsBtn');
+                if (notificationBtn && count > 0) {
+                    const newBadge = document.createElement('span');
+                    newBadge.id = 'notification-badge';
+                    newBadge.textContent = count;
+                    newBadge.style.display = 'inline-flex';
+                    notificationBtn.appendChild(newBadge);
+                }
+                return;
+            }
             
             if (count > 0) {
                 badge.style.display = 'inline-flex';
@@ -328,8 +397,7 @@ $current_section = 'market';
                 badge.style.display = 'none';
             }
         }
-        
-        // Update the notification dropdown content
+          // Update the notification dropdown content
         function updateNotificationDropdown(notifications) {
             const list = document.querySelector('.notifications-list');
             
@@ -347,7 +415,7 @@ $current_section = 'market';
             // Build notification items HTML
             for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
                 const notification = notifications[i];
-                const isUnread = !notification.is_read;
+                const isUnread = notification.is_read === '0';
                 const unreadClass = isUnread ? 'unread' : '';
                 
                 html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;

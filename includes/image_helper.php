@@ -133,51 +133,47 @@ function getUploadDirectory($directory = '') {
 }
 
 /**
- * Get profile picture with fallback to default
- * 
- * @param string $profilePic The profile picture path
- * @return string Valid profile picture URL
+ * Image helper functions for handling profile pictures and other images
  */
-function getProfilePicture($profilePic) {
-    // First check if it's already a full URL
-    if (filter_var($profilePic, FILTER_VALIDATE_URL)) {
-        return $profilePic;
+
+/**
+ * Get profile picture URL with default fallback
+ * 
+ * @param string|null $profilePicPath The profile picture path from database
+ * @return string The URL to use for the profile picture
+ */
+function getProfilePicture($profilePicPath = null) {
+    if (!empty($profilePicPath) && file_exists($_SERVER['DOCUMENT_ROOT'] . $profilePicPath)) {
+        return $profilePicPath;
     }
-    
-    // If empty, return default immediately
-    if (empty($profilePic)) {
-        return '/aftermarket_toolkit/public/assets/images/default-profile.jpg';
-    }
-    
-    // Fix common path issues
-    if (strpos($profilePic, './') === 0) {
-        $profilePic = substr($profilePic, 2);
-    }
-    
-    if (strpos($profilePic, '/') !== 0 && strpos($profilePic, 'http') !== 0) {
-        $profilePic = '/' . $profilePic;
-    }
-    
-    // Ensure proper path formatting for aftermarket_toolkit paths
-    if (strpos($profilePic, 'aftermarket_toolkit') !== false && strpos($profilePic, '/aftermarket_toolkit') !== 0) {
-        $profilePic = '/' . substr($profilePic, strpos($profilePic, 'aftermarket_toolkit'));
-    }
-    
-    // Special handling for upload paths
-    if (strpos($profilePic, 'uploads') !== false && strpos($profilePic, '/aftermarket_toolkit') === false) {
-        $profilePic = '/aftermarket_toolkit/uploads/' . basename($profilePic);
-    }
-    
-    error_log("Processed profile picture path: " . $profilePic);
-    
-    // Try to determine if the file exists locally
-    $localPath = getImageFilePath($profilePic);
-    if (file_exists($localPath)) {
-        return getImageUrl($profilePic);
-    }
-    
-    // Return default image if profile picture doesn't exist
     return '/aftermarket_toolkit/public/assets/images/default-profile.jpg';
+}
+
+/**
+ * Get icon image URL with fallback
+ * 
+ * @param string $iconName The name of the icon without extension
+ * @return string The URL to use for the icon
+ */
+function getIconImage($iconName) {
+    $iconPath = '/aftermarket_toolkit/public/assets/images/' . $iconName . '.svg';
+    if (file_exists($_SERVER['DOCUMENT_ROOT'] . $iconPath)) {
+        return $iconPath;
+    }
+    return '/aftermarket_toolkit/public/assets/images/default-icon.svg';
+}
+
+/**
+ * Generate proper image HTML with alt text and classes
+ * 
+ * @param string $src The source URL of the image
+ * @param string $alt Alt text for the image
+ * @param string $classes Optional CSS classes to add
+ * @return string HTML for the image
+ */
+function generateImageHTML($src, $alt, $classes = '') {
+    return '<img src="' . htmlspecialchars($src) . '" alt="' . htmlspecialchars($alt) . '"' .
+           (!empty($classes) ? ' class="' . htmlspecialchars($classes) . '"' : '') . '>';
 }
 
 /**

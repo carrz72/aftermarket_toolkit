@@ -8,7 +8,8 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
+// Define current section for navigation highlighting
+$current_section = 'notifications';
 $userId = $_SESSION['user_id'];
 $message = '';
 $searchResults = [];
@@ -199,6 +200,74 @@ function getFriendStats($conn, $friendId) {
     return $stats;
 }
 
+// Initialize notification filter variables
+$filterType = '';
+$showUnread = false;
+$limit = 10;
+$offset = 0;
+
+// Get notification counts if user is logged in
+$notificationCounts = [
+    'total' => 0,
+    'messages' => 0,
+    'friend_requests' => 0,
+    'forum_responses' => 0
+];
+
+if (isset($_SESSION['user_id'])) {
+    // Get unread notification count
+    $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+    $unreadStmt = $conn->prepare($unreadQuery);
+    $unreadStmt->bind_param("i", $userId);
+    $unreadStmt->execute();
+    $unreadRow = $unreadStmt->get_result()->fetch_assoc();
+    $unreadCount = $unreadRow['count'];
+    
+    // Get counts by type
+    $countsByType = [];
+    $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
+    $typesStmt = $conn->prepare($typesQuery);
+    $typesStmt->bind_param("i", $userId);
+    $typesStmt->execute();
+    $typesResult = $typesStmt->get_result();
+    
+    while ($row = $typesResult->fetch_assoc()) {
+        $countsByType[$row['type']] = $row['count'];
+    }
+    
+    $notificationCounts = [
+        'total' => $unreadCount,
+        'messages' => $countsByType['message'] ?? 0,
+        'friend_requests' => $countsByType['friend_request'] ?? 0,
+        'forum_responses' => $countsByType['forum_response'] ?? 0
+    ];
+}
+
+// Get notification counts for filter display
+$countsByType = [];
+$typesQuery = "
+    SELECT type, COUNT(*) as count 
+    FROM notifications 
+    WHERE user_id = ? 
+    GROUP BY type
+";
+$typesStmt = $conn->prepare($typesQuery);
+$typesStmt->bind_param("i", $userId);
+$typesStmt->execute();
+$typesResult = $typesStmt->get_result();
+
+while ($row = $typesResult->fetch_assoc()) {
+    $countsByType[$row['type']] = $row['count'];
+}
+
+$unreadCount = 0;
+$unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+$unreadStmt = $conn->prepare($unreadQuery);
+$unreadStmt->bind_param("i", $userId);
+$unreadStmt->execute();
+$unreadRow = $unreadStmt->get_result()->fetch_assoc();
+$unreadCount = $unreadRow['count'];
+
 ?>
 
 <!DOCTYPE html>
@@ -212,10 +281,22 @@ function getFriendStats($conn, $friendId) {
     <!-- Font Awesome for notification icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+   
         .friends-container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        .friends-h1 {
+            font-size: 36px;
+            color: #189dc5;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
         }
         
         .search-section {
@@ -427,7 +508,6 @@ function getFriendStats($conn, $friendId) {
     <a href="#" class="link" onclick="toggleDropdown(this, event)">      <span class="link-icon">
         <img src="./assets/images/forum-icon.svg" alt="Forum">
         <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
-          <span class="notification-badge forum"><?= $notificationCounts['forum_responses'] ?></span>
         <?php endif; ?>
       </span>
       <span class="link-title">Forum</span>
@@ -474,8 +554,24 @@ function getFriendStats($conn, $friendId) {
       </span>
       <span class="link-title">Chat</span>
     </a>
+    <div class="profile-container">
+    <a href="#" class="link <?= $current_section === 'jobs' ? 'active' : '' ?>" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./assets/images/job-icon.svg" alt="Jobs">
+      </span>
+      <span class="link-title">Jobs</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./jobs.php';"><img src="./assets/images/exploreicon.svg" alt="Explore">
+        Explore</button>
+      <button class="value" onclick="window.location.href='./jobs.php?action=post';"><img src="./assets/images/post_job_icon.svg" alt="Create Job">
+        Post Job</button>
+      <button class="value" onclick="window.location.href='./jobs.php?action=my_applications';"><img src="./assets/images/my_applications_icon.svg" alt="My Applications">
+        My Applications</button>
+    </div>
+  </div>
     
-    <!-- Notifications Dropdown -->
+   <!-- Notifications Dropdown -->
     <div class="notifications-container">
       <button id="notificationsBtn" class="notification-btn">
         <i class="fas fa-bell"></i>
@@ -489,10 +585,12 @@ function getFriendStats($conn, $friendId) {
           <?php if (isset($notificationCounts['total']) && $notificationCounts['total'] > 0): ?>
             <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
           <?php endif; ?>
-        </div>
-        <div class="notifications-list">
+        </div>        <div class="notifications-list">
           <!-- Notifications will be loaded here via JavaScript -->
           <div class="no-notifications">Loading notifications...</div>
+        </div>
+        <div class="notifications-footer">
+          <a href="./notifications.php" class="view-all-link">See All Notifications</a>
         </div>
       </div>
     </div>
@@ -695,15 +793,30 @@ function getFriendStats($conn, $friendId) {
     // Poll for notifications every 60 seconds
     setInterval(fetchNotifications, 60000);
   }
-  
-  // Fetch notifications via AJAX
+    // Fetch notifications via AJAX
   function fetchNotifications() {
-    fetch('./api/notifications.php')
-      .then(response => response.json())
+    const url = './api/notifications.php';
+    
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('Notification data:', data);
         if (data.success) {
+          // Make sure to update both the dropdown and any notification badges in the navigation
           updateNotificationBadge(data.counts.total || 0);
           updateNotificationDropdown(data.notifications || []);
+          
+          // Also update the forum, message, and friend request badges if they exist
+          updateSpecificBadge('forum_responses', data.counts.forum_responses || 0);
+          updateSpecificBadge('messages', data.counts.messages || 0);
+          updateSpecificBadge('friend_requests', data.counts.friend_requests || 0);
+        } else {
+          console.error('Notification fetch failed:', data.message);
         }
       })
       .catch(error => {
@@ -724,8 +837,7 @@ function getFriendStats($conn, $friendId) {
       badge.style.display = 'none';
     }
   }
-  
-  // Update the notification dropdown content
+    // Update the notification dropdown content
   function updateNotificationDropdown(notifications) {
     const list = document.querySelector('.notifications-list');
     
@@ -743,7 +855,7 @@ function getFriendStats($conn, $friendId) {
     // Build notification items HTML
     for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
       const notification = notifications[i];
-      const isUnread = !notification.is_read;
+      const isUnread = notification.is_read === '0';
       const unreadClass = isUnread ? 'unread' : '';
       
       html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
@@ -767,22 +879,52 @@ function getFriendStats($conn, $friendId) {
         html += '<div class="notification-mark-read"><i class="fas fa-check"></i></div>';
       }
       
-      html += `<a href="${getNotificationLink(notification.type, notification.related_id)}" class="notification-link"></a>`;
+      html += `<a href="${notification.link || '#'}" class="notification-link"></a>`;
       html += '</div>';
     }
     
     // If there are more notifications than we're showing, add a "view all" link
     if (notifications.length > maxToShow) {
       html += '<div class="notification-item show-all">';
-      html += `<a href="./notifications.php">View all notifications</a>`;
+      html += '<a href="./notifications.php">View all notifications</a>';
       html += '</div>';
     }
     
     list.innerHTML = html;
+    
+    // Add event listeners to mark notifications as read
+    list.querySelectorAll('.notification-mark-read').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const item = this.closest('.notification-item');
+        const id = item.dataset.id;
+        
+        fetch('./api/notifications.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=mark_read&notification_id=${id}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            item.classList.remove('unread');
+            this.remove();
+            updateNotificationBadge(data.counts.total);
+          }
+        })        .catch(error => console.error('Error marking as read:', error));
+      });
+    });
   }
   
-  // Get the appropriate link for a notification
-  function getNotificationLink(type, relatedId) {
+  // Format timestamp as time ago text
+  function formatTimeAgo(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
     switch(type) {
       case 'friend_request':
         return './friends.php';
@@ -936,6 +1078,37 @@ function getFriendStats($conn, $friendId) {
       }
     });
   });
+
+  // Update specific notification badge (forum, messages, friends)
+  function updateSpecificBadge(type, count) {
+    // Map notification type to badge class
+    let badgeClass;
+    switch(type) {
+      case 'forum_responses':
+        badgeClass = 'forum';
+        break;
+      case 'messages':
+        badgeClass = 'messages';
+        break;
+      case 'friend_requests':
+        badgeClass = 'friends';
+        break;
+      default:
+        badgeClass = type.replace('_', '-');
+    }
+    
+    const badges = document.querySelectorAll(`.notification-badge.${badgeClass}`);
+    if (badges.length > 0) {
+      badges.forEach(badge => {
+        if (count > 0) {
+          badge.style.display = 'inline-flex';
+          badge.textContent = count;
+        } else {
+          badge.style.display = 'none';
+        }
+      });
+    }
+  }
 </script>
 </body>
 </html>

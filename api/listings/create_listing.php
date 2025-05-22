@@ -9,19 +9,11 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$userId = $_SESSION['user_id'];
+// Initialize variables
 $errors = [];
 $success = false;
-
-// Get categories for dropdown
-$categoryQuery = "SELECT DISTINCT category FROM listings ORDER BY category ASC";
-$categoryResult = $conn->query($categoryQuery);
-$categories = [];
-while ($row = $categoryResult->fetch_assoc()) {
-    if (!empty($row['category'])) {
-        $categories[] = $row['category'];
-    }
-}
+$listingId = 0;
+$userId = $_SESSION['user_id'];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -187,103 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="menu">
-        <a href="../../index.php" class="link">
-            <span class="link-icon">
-                <img src="../../public/assets/images/home-icon.svg" alt="Home">
-            </span>
-            <span class="link-title">Home</span>
-        </a>
-
-        <!-- Market dropdown -->
-        <div class="profile-container">
-            <a href="#" class="link active" onclick="toggleDropdown(this, event)">
-                <span class="link-icon">
-                    <img src="../../public/assets/images/market.svg" alt="Market">
-                </span>
-                <span class="link-title">Market</span>
-            </a>            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='../../public/marketplace.php?view=explore';"><img src="../../public/assets/images/exploreicon.svg" alt="Explore">Explore</button>
-                <button class="value" onclick="window.location.href='../listings/view_listings.php';"><img src="../../public/assets/images/view_listingicon.svg" alt="View Listings">My Listings</button>
-                <button class="value" onclick="window.location.href='../listings/create_listing.php';"><img src="../../public/assets/images/list_itemicon.svg" alt="Create Listing">List Item</button>
-                <button class="value" onclick="window.location.href='../../public/saved_listings.php';"><img src="../../public/assets/images/savedicons.svg" alt="Saved">Saved Items</button>
-            </div>
-        </div>
-        
-        <!-- Forum dropdown -->
-        <div class="profile-container">
-            <a href="#" class="link" onclick="toggleDropdown(this, event)">
-                <span class="link-icon">
-                    <img src="../../public/assets/images/forum-icon.svg" alt="Forum">
-                </span>
-                <span class="link-title">Forum</span>
-            </a>            <div class="dropdown-content">
-                <button class="value" onclick="window.location.href='../../public/forum.php?view=threads';"><img src="../../public/assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
-                <button class="value" onclick="window.location.href='../../public/forum.php?view=start_thread';"><img src="../../public/assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
-                <button class="value" onclick="window.location.href='../../public/forum.php?view=post_question';"><img src="../../public/assets/images/start_threadicon.svg" alt="Post Question">Ask Question</button>
-            </div>
-        </div>
-        
-        <!-- Profile dropdown -->
-        <div class="profile-container">
-            <a href="#" class="link" onclick="toggleDropdown(this, event)">
-                <span class="link-icon">
-                    <img src="../../public/assets/images/profile-icon.svg" alt="Profile">
-                </span>
-                <span class="link-title">Profile</span>
-            </a>
-            <div class="dropdown-content">                <?php if (isset($_SESSION['user_id'])): ?>
-                    <button class="value" onclick="window.location.href='../../public/profile.php';">
-                        <img src="../../public/assets/images/profile-icon.svg" alt="Profile">Account
-                    </button>
-                    <button class="value" onclick="window.location.href='../listings/view_listings.php';"><img src="../../public/assets/images/mylistingicon.svg" alt="Market">My Listings</button>
-                    <button class="value" onclick="window.location.href='../../public/saved_listings.php';"><img src="../../public/assets/images/savedicons.svg" alt="Saved">Saved Items</button>
-                    <button class="value" onclick="window.location.href='../../public/friends.php';"><img src="../../public/assets/images/profile-icon.svg" alt="Account">Friends</button>
-                    <button class="value" onclick="window.location.href='../../public/logout.php';"><img src="../../public/assets/images/Log_Outicon.svg" alt="Logout">Logout</button>
-                <?php else: ?>
-                    <button class="value" onclick="window.location.href='../../public/login.php';">Login</button>
-                    <button class="value" onclick="window.location.href='../../public/register.php';">Register</button>
-                <?php endif; ?>
-            </div>
-        </div>        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="../../public/chat.php" class="link">
-                <span class="link-icon">
-                    <img src="../../public/assets/images/chat-icon.svg" alt="Chat">
-                </span>
-                <span class="link-title">Chat</span>
-            </a>
-            
-            <!-- Notifications Dropdown -->
-            <div class="notifications-container">
-                <button id="notificationsBtn" class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <?php 
-                    // Get notification counts if the function exists
-                    $notificationCount = 0;
-                    if (function_exists('countUnreadNotifications')) {
-                        $counts = countUnreadNotifications($conn, $_SESSION['user_id']);
-                        $notificationCount = $counts['total'];
-                    }
-                    if ($notificationCount > 0): 
-                    ?>
-                    <span id="notification-badge"><?= $notificationCount ?></span>
-                    <?php endif; ?>
-                </button>
-                <div id="notificationsDropdown" class="notifications-dropdown">
-                    <div class="notifications-header">
-                        <h3>Notifications</h3>
-                        <?php if ($notificationCount > 0): ?>
-                        <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
-                        <?php endif; ?>
-                    </div>
-                    <div class="notifications-list">
-                        <!-- Notifications will be loaded here via JavaScript -->
-                        <div class="no-notifications">Loading notifications...</div>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
-    </div>
+   
 
     <div class="create-listing-container">
         <h1>Create a New Listing</h1>
@@ -390,10 +286,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="file" id="additional_images" name="additional_images[]" multiple class="form-control" accept="image/*">
                 <div id="additionalImagesPreview" class="image-preview-container"></div>
             </div>
-            
-            <div class="form-buttons">
+              <div class="form-buttons">
                 <button type="submit" class="submit-btn">Create Listing</button>
-                <a href="view_listings.php" class="cancel-btn">Cancel</a>
+                <a href="javascript:history.back()" class="cancel-btn">Cancel</a>
             </div>
         </form>
     </div>
@@ -512,15 +407,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Poll for notifications every 60 seconds
             setInterval(fetchNotifications, 60000);
         }
-        
-        // Fetch notifications via AJAX
+          // Fetch notifications via AJAX
         function fetchNotifications() {
             fetch('../../public/api/notifications.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Notification data:', data);
                     if (data.success) {
+                        // Make sure to update both the dropdown and any notification badges in the navigation
                         updateNotificationBadge(data.counts.total || 0);
                         updateNotificationDropdown(data.notifications || []);
+                        
+                        // Also update the forum, message, and friend request badges if they exist
+                        updateSpecificBadge('forum_responses', data.counts.forum_responses || 0);
+                        updateSpecificBadge('messages', data.counts.messages || 0);
+                        updateSpecificBadge('friend_requests', data.counts.friend_requests || 0);
+                    } else {
+                        console.error('Notification fetch failed:', data.message);
                     }
                 })
                 .catch(error => {
@@ -541,8 +449,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 badge.style.display = 'none';
             }
         }
-        
-        // Update the notification dropdown content
+          // Update the notification dropdown content
         function updateNotificationDropdown(notifications) {
             const list = document.querySelector('.notifications-list');
             
@@ -560,7 +467,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Build notification items HTML
             for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
                 const notification = notifications[i];
-                const isUnread = !notification.is_read;
+                const isUnread = notification.is_read === '0';
                 const unreadClass = isUnread ? 'unread' : '';
                 
                 html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
@@ -584,18 +491,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     html += '<div class="notification-mark-read"><i class="fas fa-check"></i></div>';
                 }
                 
-                html += `<a href="${getNotificationLink(notification.type, notification.related_id)}" class="notification-link"></a>`;
+                html += `<a href="${notification.link || '../../public/notifications.php'}" class="notification-link"></a>`;
                 html += '</div>';
             }
             
             // If there are more notifications than we're showing, add a "view all" link
             if (notifications.length > maxToShow) {
                 html += '<div class="notification-item show-all">';
-                html += `<a href="../../public/notifications.php">View all notifications</a>`;
+                html += '<a href="../../public/notifications.php">View all notifications</a>';
                 html += '</div>';
             }
             
             list.innerHTML = html;
+            
+            // Add event listeners to mark notifications as read
+            list.querySelectorAll('.notification-mark-read').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const item = this.closest('.notification-item');
+                    const id = item.dataset.id;
+                    
+                    fetch('../../public/api/notifications.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `action=mark_read&notification_id=${id}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            item.classList.remove('unread');
+                            this.remove();
+                            updateNotificationBadge(data.counts.total);
+                        }
+                    })
+                    .catch(error => console.error('Error marking as read:', error));
+                });
+            });
+        }
         }
         
         // Get the appropriate link for a notification
@@ -764,6 +700,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             });
+        }
+        
+        // Update specific notification badge (forum, messages, friends)
+        function updateSpecificBadge(type, count) {
+            // Map notification type to badge class
+            let badgeClass;
+            switch(type) {
+                case 'forum_responses':
+                    badgeClass = 'forum';
+                    break;
+                case 'messages':
+                    badgeClass = 'messages';
+                    break;
+                case 'friend_requests':
+                    badgeClass = 'friends';
+                    break;
+                default:
+                    badgeClass = type.replace('_', '-');
+            }
+            
+            const badges = document.querySelectorAll(`.notification-badge.${badgeClass}`);
+            if (badges.length > 0) {
+                badges.forEach(badge => {
+                    if (count > 0) {
+                        badge.style.display = 'inline-flex';
+                        badge.textContent = count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+            }
         }
     </script>
 </body>

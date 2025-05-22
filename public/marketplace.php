@@ -9,19 +9,44 @@ require_once __DIR__ . '/../includes/notification_handler.php';
 
 // Get notification counts if user is logged in
 $notificationCounts = [
+    'total' => 0,
     'messages' => 0,
     'friend_requests' => 0,
-    'forum_responses' => 0,
-    'total' => 0
+    'forum_responses' => 0
 ];
 
 if (isset($_SESSION['user_id'])) {
-    if (function_exists('countUnreadNotifications')) {
-        $notificationCounts = countUnreadNotifications($conn, $_SESSION['user_id']);
-    } else if (function_exists('getNotificationCounts')) {
-        $notificationCounts = getNotificationCounts($_SESSION['user_id'], $conn);
+    // Get notification counts
+    $userId = $_SESSION['user_id'];
+    
+    // Get unread notification count
+    $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+    $unreadStmt = $conn->prepare($unreadQuery);
+    $unreadStmt->bind_param("i", $userId);
+    $unreadStmt->execute();
+    $unreadRow = $unreadStmt->get_result()->fetch_assoc();
+    $unreadCount = $unreadRow['count'];
+    
+    // Get counts by type
+    $countsByType = [];
+    $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
+    $typesStmt = $conn->prepare($typesQuery);
+    $typesStmt->bind_param("i", $userId);
+    $typesStmt->execute();
+    $typesResult = $typesStmt->get_result();
+    
+    while ($row = $typesResult->fetch_assoc()) {
+        $countsByType[$row['type']] = $row['count'];
     }
+    
+    $notificationCounts = [
+        'total' => $unreadCount,
+        'messages' => $countsByType['message'] ?? 0,
+        'friend_requests' => $countsByType['friend_request'] ?? 0,
+        'forum_responses' => $countsByType['forum_response'] ?? 0
+    ];
 }
+
 
 
 
@@ -156,12 +181,14 @@ function getConditionClass($condition) {
       <button class="value" onclick="window.location.href='./saved_listings.php';"><img src="./assets/images/savedicons.svg" alt="Saved"> Saved Items</button>
     </div>
   </div>
-  
-  <!-- Forum with dropdown -->
+    <!-- Forum with dropdown -->
   <div class="profile-container">
     <a href="#" class="link" onclick="toggleDropdown(this, event)">
       <span class="link-icon">
         <img src="./assets/images/forum-icon.svg" alt="Forum">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
+          <span class="notification-badge forum"><?= $notificationCounts['forum_responses'] ?></span>
+        <?php endif; ?>
       </span>
       <span class="link-title">Forum</span>
     </a>    <div class="dropdown-content">
@@ -171,13 +198,15 @@ function getConditionClass($condition) {
     </div>
   </div>
 
-  <div class="profile-container">
-    <a href="#" class="link" onclick="toggleDropdown(this, event)">
+  <div class="profile-container">    <a href="#" class="link" onclick="toggleDropdown(this, event)">
       <span class="link-icon">
         <img src="./assets/images/profile-icon.svg" alt="Profile">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['friend_requests']) && $notificationCounts['friend_requests'] > 0): ?>
+          <span class="notification-badge friends"><?= $notificationCounts['friend_requests'] ?></span>
+        <?php endif; ?>
       </span>
       <span class="link-title">Profile</span>
-    </a>    <div id="profileDropdown" class="dropdown-content">
+    </a><div id="profileDropdown" class="dropdown-content">
     <?php if (isset($_SESSION['user_id'])): ?>
       <button class="value" onclick="window.location.href='./profile.php';">
         <img src="./assets/images/profile-icon.svg" alt="Profile">Account
@@ -192,14 +221,34 @@ function getConditionClass($condition) {
       <?php endif; ?>
     </div>
   </div>
-  <?php if (isset($_SESSION['user_id'])): ?>
-    <a href="./chat.php" class="link">
+  <?php if (isset($_SESSION['user_id'])): ?>    <a href="./chat.php" class="link">
       <span class="link-icon">
         <img src="./assets/images/chat-icon.svg" alt="Chat">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['messages']) && $notificationCounts['messages'] > 0): ?>
+          <span class="notification-badge messages"><?= $notificationCounts['messages'] ?></span>
+        <?php endif; ?>
       </span>
       <span class="link-title">Chat</span>
     </a>
-    
+        <div class="profile-container">
+    <a href="#" class="link <?= $current_section === 'jobs' ? 'active' : '' ?>" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./assets/images/job-icon.svg" alt="Jobs">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['job_applications']) && $notificationCounts['job_applications'] > 0): ?>
+          <span class="notification-badge jobs"><?= $notificationCounts['job_applications'] ?></span>
+        <?php endif; ?>
+      </span>
+      <span class="link-title">Jobs</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./jobs.php';"><img src="./assets/images/exploreicon.svg" alt="Explore">
+        Explore</button>
+      <button class="value" onclick="window.location.href='./jobs.php?action=post';"><img src="./assets/images/post_job_icon.svg" alt="Create Job">
+        Post Job</button>
+      <button class="value" onclick="window.location.href='./jobs.php?action=my_applications';"><img src="./assets/images/my_applications_icon.svg" alt="My Applications">
+        My Applications</button>
+    </div>
+  </div>
     <!-- Notifications Dropdown -->
     <div class="notifications-container">
       <button id="notificationsBtn" class="notification-btn">
@@ -214,10 +263,12 @@ function getConditionClass($condition) {
           <?php if (isset($notificationCounts) && $notificationCounts['total'] > 0): ?>
             <button id="markAllReadBtn" class="mark-all-read">Mark all as read</button>
           <?php endif; ?>
-        </div>
-        <div class="notifications-list">
+        </div>        <div class="notifications-list">
           <!-- Notifications will be loaded here via JavaScript -->
-          <div class="no-notifications">Loading notifications...</div>
+          <div class="no-notifications">no notifications</div>
+        </div>
+        <div class="notifications-footer">
+          <a href="./notifications.php" class="view-all-link">See All Notifications</a>
         </div>
       </div>
     </div>
@@ -542,25 +593,94 @@ function getConditionClass($condition) {
     // Poll for new notifications every 60 seconds
     setInterval(fetchNotifications, 60000);
   }
-  
-  // Fetch notifications via AJAX
+    // Fetch notifications via AJAX
   function fetchNotifications() {
-    fetch('./api/notifications.php')
-      .then(response => response.json())
-      .then(data => {
+    const url = './api/notifications.php';
+    
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+      })      .then(data => {
+        console.log('Notification data:', data);
         if (data.success) {
+          // Make sure to update both the dropdown and any notification badges in the navigation
           updateNotificationBadge(data.counts.total || 0);
           updateNotificationDropdown(data.notifications || []);
+          
+          // Also update the forum, message, and friend request badges if they exist
+          updateSpecificBadge('forum_responses', data.counts.forum_responses || 0);
+          updateSpecificBadge('messages', data.counts.messages || 0);
+          updateSpecificBadge('friend_requests', data.counts.friend_requests || 0);
+        } else {
+          console.error('Notification fetch failed:', data.message);
         }
       })
-      .catch(error => console.error('Error fetching notifications:', error));
+      .catch(error => {
+        console.error('Error fetching notifications:', error);
+      });
+  }
+  
+  // Helper function to check if API endpoint exists
+  function checkApiEndpoint() {
+    // Check if the api/notifications.php file exists
+    fetch('./api/notifications.php', { method: 'HEAD' })
+      .then(response => {
+        if (!response.ok) {
+          console.error('Notifications API endpoint does not exist or returned an error');
+        }
+      })      .catch(error => console.error('Could not check API endpoint:', error));
+  }
+  
+  // Update specific notification badge (forum, messages, friends)
+  function updateSpecificBadge(type, count) {
+    // Map notification type to badge class
+    let badgeClass;
+    switch(type) {
+      case 'forum_responses':
+        badgeClass = 'forum';
+        break;
+      case 'messages':
+        badgeClass = 'messages';
+        break;
+      case 'friend_requests':
+        badgeClass = 'friends';
+        break;
+      default:
+        badgeClass = type.replace('_', '-');
+    }
+    
+    const badges = document.querySelectorAll(`.notification-badge.${badgeClass}`);
+    if (badges.length > 0) {
+      badges.forEach(badge => {
+        if (count > 0) {
+          badge.style.display = 'inline-flex';
+          badge.textContent = count;
+        } else {
+          badge.style.display = 'none';
+        }
+      });
+    }
   }
   
   // Update the notification badge count
   function updateNotificationBadge(count) {
     const badge = document.getElementById('notification-badge');
     
-    if (!badge) return;
+    if (!badge) {
+      // If badge doesn't exist yet, create it
+      const notificationBtn = document.getElementById('notificationsBtn');
+      if (notificationBtn && count > 0) {
+        const newBadge = document.createElement('span');
+        newBadge.id = 'notification-badge';
+        newBadge.textContent = count;
+        newBadge.style.display = 'inline-flex';
+        notificationBtn.appendChild(newBadge);
+      }
+      return;
+    }
     
     if (count > 0) {
       badge.style.display = 'inline-flex';
@@ -569,8 +689,7 @@ function getConditionClass($condition) {
       badge.style.display = 'none';
     }
   }
-  
-  // Update the notification dropdown content
+    // Update the notification dropdown content
   function updateNotificationDropdown(notifications) {
     const list = document.querySelector('.notifications-list');
     
@@ -588,7 +707,7 @@ function getConditionClass($condition) {
     // Build notification items HTML
     for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
       const notification = notifications[i];
-      const isUnread = !notification.is_read;
+      const isUnread = notification.is_read === '0';
       const unreadClass = isUnread ? 'unread' : '';
       
       html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
@@ -622,8 +741,7 @@ function getConditionClass($condition) {
       html += '<a href="./notifications.php">View all notifications</a>';
       html += '</div>';
     }
-    
-    list.innerHTML = html;
+      list.innerHTML = html;
     
     // Add event listeners to mark notifications as read
     list.querySelectorAll('.notification-mark-read').forEach(btn => {

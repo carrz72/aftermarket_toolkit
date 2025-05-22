@@ -15,6 +15,43 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
+// Get notification counts if user is logged in
+$notificationCounts = [
+    'total' => 0,
+    'messages' => 0,
+    'friend_requests' => 0,
+    'forum_responses' => 0
+];
+
+if (isset($_SESSION['user_id'])) {
+    // Get unread notification count
+    $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+    $unreadStmt = $conn->prepare($unreadQuery);
+    $unreadStmt->bind_param("i", $userId);
+    $unreadStmt->execute();
+    $unreadRow = $unreadStmt->get_result()->fetch_assoc();
+    $unreadCount = $unreadRow['count'];
+    
+    // Get counts by type
+    $countsByType = [];
+    $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
+    $typesStmt = $conn->prepare($typesQuery);
+    $typesStmt->bind_param("i", $userId);
+    $typesStmt->execute();
+    $typesResult = $typesStmt->get_result();
+    
+    while ($row = $typesResult->fetch_assoc()) {
+        $countsByType[$row['type']] = $row['count'];
+    }
+    
+    $notificationCounts = [
+        'total' => $unreadCount,
+        'messages' => $countsByType['message'] ?? 0,
+        'friend_requests' => $countsByType['friend_request'] ?? 0,
+        'forum_responses' => $countsByType['forum_response'] ?? 0
+    ];
+}
+
 // Handle removal of saved listing
 if (isset($_POST['remove']) && isset($_POST['listing_id'])) {
     $listingId = (int)$_POST['listing_id'];
@@ -136,34 +173,29 @@ $result = $stmt->get_result();
                 </span>
                 <span class="link-title">Chat</span>
             </a>
-            
-            <!-- Notifications Dropdown -->
-            <div class="notifications-container">
+              <div class="profile-container">
+    <a href="#" class="link <?= $current_section === 'jobs' ? 'active' : '' ?>" onclick="toggleDropdown(this, event)">
+      <span class="link-icon">
+        <img src="./assets/images/job-icon.svg" alt="Jobs">
+      </span>
+      <span class="link-title">Jobs</span>
+    </a>
+    <div class="dropdown-content">
+      <button class="value" onclick="window.location.href='./jobs.php';"><img src="./assets/images/exploreicon.svg" alt="Explore">
+        Explore</button>
+      <button class="value" onclick="window.location.href='./jobs.php?action=post';"><img src="./assets/images/post_job_icon.svg" alt="Create Job">
+        Post Job</button>
+      <button class="value" onclick="window.location.href='./jobs.php?action=my_applications';"><img src="./assets/images/my_applications_icon.svg" alt="My Applications">
+        My Applications</button>
+    </div>
+  </div>
+            <!-- Notifications Dropdown -->            <div class="notifications-container">
                 <button id="notificationsBtn" class="notification-btn">
                     <i class="fas fa-bell"></i>
-                    <?php 
-                    // Get notification counts if user is logged in
-                    $notificationCounts = [
-                        'messages' => 0,
-                        'friend_requests' => 0,
-                        'forum_responses' => 0,
-                        'total' => 0
-                    ];
-
-                    if (isset($_SESSION['user_id'])) {
-                        if (function_exists('countUnreadNotifications')) {
-                            $notificationCounts = countUnreadNotifications($conn, $_SESSION['user_id']);
-                        } else if (function_exists('getNotificationCounts')) {
-                            $notificationCounts = getNotificationCounts($_SESSION['user_id'], $conn);
-                        }
-                    }
-                    
-                    if ($notificationCounts['total'] > 0): 
-                    ?>
-                    <span id="notification-badge"><?= $notificationCounts['total'] ?></span>
+                    <?php if (isset($notificationCounts) && $notificationCounts['total'] > 0): ?>
+                      <span id="notification-badge"><?= $notificationCounts['total'] ?></span>
                     <?php endif; ?>
-                </button>
-                <div id="notificationsDropdown" class="notifications-dropdown">
+                </button><div id="notificationsDropdown" class="notifications-dropdown">
                     <div class="notifications-header">
                         <h3>Notifications</h3>
                         <?php if ($notificationCounts['total'] > 0): ?>
@@ -173,6 +205,9 @@ $result = $stmt->get_result();
                     <div class="notifications-list">
                         <!-- Notifications will be loaded here via JavaScript -->
                         <div class="no-notifications">Loading notifications...</div>
+                    </div>
+                    <div class="notifications-footer">
+                        <a href="./notifications.php" class="view-all-link">See All Notifications</a>
                     </div>
                 </div>
             </div>
@@ -283,22 +318,64 @@ $result = $stmt->get_result();
             // Poll for notifications every 60 seconds
             setInterval(fetchNotifications, 60000);
         }
-        
-        // Fetch notifications via AJAX
+          // Fetch notifications via AJAX
         function fetchNotifications() {
             const baseUrl = window.location.pathname.includes('/public/') ? '..' : '/aftermarket_toolkit';
             
             fetch(`${baseUrl}/public/api/notifications.php`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         updateNotificationBadge(data.counts.total || 0);
                         updateNotificationDropdown(data.notifications || []);
+                        
+                        // Also update specific notification badges
+                        updateSpecificBadge('forum_responses', data.counts.forum_responses || 0);
+                        updateSpecificBadge('messages', data.counts.messages || 0);
+                        updateSpecificBadge('friend_requests', data.counts.friend_requests || 0);
+                    } else {
+                        console.error('Notification fetch failed:', data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching notifications:', error);
                 });
+        }
+        
+        // Update specific notification badge (forum, messages, friends)
+        function updateSpecificBadge(type, count) {
+            // Map notification type to badge class
+            let badgeClass;
+            switch(type) {
+                case 'forum_responses':
+                    badgeClass = 'forum';
+                    break;
+                case 'messages':
+                    badgeClass = 'messages';
+                    break;
+                case 'friend_requests':
+                    badgeClass = 'friends';
+                    break;
+                default:
+                    badgeClass = type.replace('_', '-');
+            }
+            
+            const badges = document.querySelectorAll(`.notification-badge.${badgeClass}`);
+            if (badges.length > 0) {
+                badges.forEach(badge => {
+                    if (count > 0) {
+                        badge.style.display = 'inline-flex';
+                        badge.textContent = count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+            }
         }
         
         // Update the notification badge count
@@ -314,8 +391,7 @@ $result = $stmt->get_result();
                 badge.style.display = 'none';
             }
         }
-        
-        // Update the notification dropdown content
+          // Update the notification dropdown content
         function updateNotificationDropdown(notifications) {
             const list = document.querySelector('.notifications-list');
             
@@ -333,7 +409,7 @@ $result = $stmt->get_result();
             // Build notification items HTML
             for (let i = 0; i < Math.min(notifications.length, maxToShow); i++) {
                 const notification = notifications[i];
-                const isUnread = !notification.is_read;
+                const isUnread = notification.is_read === '0';
                 const unreadClass = isUnread ? 'unread' : '';
                 
                 html += `<div class="notification-item ${unreadClass}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id || ''}">`;
@@ -357,7 +433,7 @@ $result = $stmt->get_result();
                     html += '<div class="notification-mark-read"><i class="fas fa-check"></i></div>';
                 }
                 
-                html += `<a href="${getNotificationLink(notification.type, notification.related_id)}" class="notification-link"></a>`;
+                html += `<a href="${notification.link || getNotificationLink(notification.type, notification.related_id)}" class="notification-link"></a>`;
                 html += '</div>';
             }
             
@@ -370,6 +446,34 @@ $result = $stmt->get_result();
             }
             
             list.innerHTML = html;
+            
+            // Add event listeners to mark notifications as read
+            list.querySelectorAll('.notification-mark-read').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const item = this.closest('.notification-item');
+                    const id = item.dataset.id;
+                    const baseUrl = window.location.pathname.includes('/public/') ? '..' : '/aftermarket_toolkit';
+                    
+                    fetch(`${baseUrl}/public/api/notifications.php`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `action=mark_read&notification_id=${id}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            item.classList.remove('unread');
+                            this.remove();
+                            updateNotificationBadge(data.counts.total);
+                        }
+                    })
+                    .catch(error => console.error('Error marking as read:', error));                });
+            });
         }
         
         // Get the appropriate link for a notification

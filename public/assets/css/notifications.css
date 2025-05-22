@@ -1,10 +1,11 @@
-/**
- * Notification System Styles
- * CSS for styling the notification system components
- * 
- * Organized to match the structure in notifications.php and index.php
- */
-
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+   background-image: url("../images/marketplace_bg5.jpg");
+    background-position: center;
+    background-size: cover;
+  line-height: 1.6;
+}
 /* Variables for consistent styling */
 :root {
   --primary-color: #189dc5;
@@ -215,77 +216,155 @@
 }
 
 /* Icon color variations by notification type */
-.notification-icon .fa-envelope {
+.notification-icon .fa-envelope,
+.notification-icon .fa-comment-dots,
+.notification-icon .fa-comments {
   color: #17a2b8;
 }
 
-.notification-icon .fa-user-plus {
+.notification-icon .fa-user-plus,
+.notification-icon .fa-users {
   color: #28a745;
 }
 
-.notification-icon .fa-comments {
+.notification-icon .fa-comments,
+.notification-icon .fa-reply,
+.notification-icon .fa-comment-alt {
   color: #fd7e14;
 }
 
-/* Notification Content */
-.notification-content {
-  flex: 1;
+.notification-icon .fa-briefcase,
+.notification-icon .fa-clipboard-list {
+  color: #6610f2;
 }
 
-.notification-text {
-  color: var(--text-dark);
-  margin-bottom: 4px;
-  font-size: 0.9em;
-  line-height: 1.4;
+.notification-icon .fa-tag,
+.notification-icon .fa-shopping-cart {
+  color: #e83e8c;
 }
 
-.notification-time {
-  color: var(--text-muted);
-  font-size: 0.8em;
+/* ========================================================================
+   8. Improved Notification UI Components
+======================================================================== */
+/* Notification icon variants for different notification types */
+.notification-icon i.fa-comment-dots,
+.notification-icon i.fa-comments {
+  color: #17a2b8;
 }
 
-/* Mark as Read Button */
-.notification-mark-read {
+.notification-icon i.fa-user-plus,
+.notification-icon i.fa-users {
+  color: #28a745;
+}
+
+.notification-icon i.fa-reply,
+.notification-icon i.fa-comment-alt {
+  color: #fd7e14;
+}
+
+.notification-icon i.fa-briefcase,
+.notification-icon i.fa-clipboard-list {
+  color: #6610f2;
+}
+
+.notification-icon i.fa-tag,
+.notification-icon i.fa-shopping-cart {
+  color: #e83e8c;
+}
+
+/* Fix for notification sender username alignment */
+.notification-sender {
+  align-items: center;
+}
+
+.sender-name {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Notification page container improvements */
+.notifications-container-page {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.notifications-list-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Improved appearance for notification actions */
+.notification-actions {
+  display: flex;
+  gap: 8px;
   margin-left: 10px;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: color 0.2s ease;
-  align-self: center;
-  position: relative;
-  z-index: 2;
 }
 
-.notification-mark-read:hover {
-  color: var(--primary-color);
-}
-
-/* Notification Link */
-.notification-link {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  z-index: 1;
-}
-
-/* Show All Link at bottom of dropdown */
-.notification-item.show-all {
-  text-align: center;
-  padding: 10px;
-  background-color: #f8f9fa;
-}
-
-.notification-item.show-all a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 500;
+.notification-actions .btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
   font-size: 14px;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+  color: #6c757d;
 }
 
-.notification-item.show-all a:hover {
-  text-decoration: underline;
+.notification-actions .btn:hover {
+  transform: translateY(-2px);
+}
+
+.notification-actions .btn-danger {
+  color: #dc3545;
+}
+
+.notification-actions .btn-danger:hover {
+  background-color: #f8d7da;
+}
+
+.notification-actions .btn-secondary:hover {
+  background-color: #e2e6ea;
+}
+
+/* Empty state improvements */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  background-color: rgba(248, 249, 250, 0.7);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #adb5bd;
+  margin-bottom: 20px;
+}
+
+.empty-state h2 {
+  margin: 0 0 10px;
+  color: #495057;
+  font-size: 24px;
+}
+
+.empty-state p {
+  color: #6c757d;
+  font-size: 16px;
+}
+
+/* Adjustments for notifications with username display */
+.notification-item.with-user {
+  padding-left: 10px;
 }
 
 /* ========================================================================
@@ -307,7 +386,7 @@
 .page-header h1 {
   margin: 0;
   font-size: 24px;
-  color: #333;
+  color: #17a2b8;
 }
 
 .header-actions {
@@ -538,4 +617,344 @@
     white-space: nowrap;
     padding-bottom: 10px;
   }
+}
+
+/* ========================================================================
+   7. Notification Types and Indicators
+======================================================================== */
+/* Type-specific styling for notification badges and icons */
+
+/* Message notifications */
+.notification-badge.messages {
+  background-color: #17a2b8;
+}
+
+/* Forum response notifications */
+.notification-badge.forum {
+  background-color: #fd7e14;
+}
+
+/* Friend request notifications */
+.notification-badge.friends {
+  background-color: #28a745;
+}
+
+/* Job application notifications */
+.notification-badge.jobs {
+  background-color: #6610f2;
+}
+
+/* Listing notifications */
+.notification-badge.listings {
+  background-color: #e83e8c;
+}
+
+/* Type-specific icons */
+.notification-icon.message i {
+  color: #17a2b8;
+}
+
+.notification-icon.friend_request i {
+  color: #28a745;
+}
+
+.notification-icon.forum_response i {
+  color: #fd7e14;
+}
+
+.notification-icon.job_application i {
+  color: #6610f2;
+}
+
+.notification-icon.listing i {
+  color: #e83e8c;
+}
+
+/* User profile pictures in notifications */
+.notification-sender {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.notification-sender img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Fixed position for notification dropdown on small screens */
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    width: 300px;
+    max-height: 80vh;
+    z-index: 2000;
+  }
+  
+  .notification-text {
+    font-size: 0.85em;
+  }
+}
+
+/* Fix for notification badge placement in menu */
+.link-icon .notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+/* Animation for new notifications */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.notification-badge.new {
+  animation: pulse 1s infinite;
+}
+
+/* Interactive styles for notification items */
+.notification-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-item:active {
+  transform: scale(0.98);
+}
+
+/* Notification mark read button hover effects */
+.notification-mark-read:hover i {
+  transform: scale(1.2);
+}
+
+
+/* Menu styles (same as in your other pages) */
+.menu {
+    background-color: white;
+    box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.541);
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    text-align: center;
+    margin: 10px auto;
+    padding: 0.8rem;
+    position: relative;
+    border-radius: 15px;
+      max-width: 1200px;
+}
+
+.link {
+    color: white;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    transform-origin: center left;
+    transition: width 0.2s ease-in;
+    width: 70px;
+    height: 30px;
+    border-radius: 8px;
+    z-index: 1;
+    padding: 5px;
+}
+
+.link:before {
+    background-color: #189dc5;
+    border-radius: 8px;
+    content: "";
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    transform: translateX(100%);
+    transform-origin: center right;
+    transition: transform 0.2s ease-in;
+    width: 100%;
+    z-index: -1;
+}
+
+.link:hover,
+.link:focus,
+.link.active {
+    outline: 0;
+    width: 130px;
+}
+
+.link:hover:before,
+.link:focus:before,
+.link.active:before,
+.link:hover .link-title,
+.link:focus .link-title,
+.link.active .link-title {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.link-icon {
+    display: block;
+    flex-shrink: 0;
+    height: 48px;
+    left: 18px;
+    position: absolute;
+    width: 28px;
+}
+
+.link-icon img {
+    height: 30px;
+    width: 30px;
+}
+
+.link-title {
+      display: block;
+    text-align: center;
+    font-size: 1.5em;
+    text-indent: 40px;
+    transition: transform 0.2s ease-in;
+    transform: translateX(100%);
+    transform-origin: center right;
+    width: 100%;
+    height: 100%;
+    line-height: 25px;
+}
+
+/* Active menu item styling */
+.link.active {
+    outline: 0;
+    width: 130px;
+    background-color: #209cc8;
+}
+
+.link.active:before {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.link.active .link-title {
+    opacity: 1;
+    transform: translateX(0);
+    color: #fff;
+}
+
+.link.active .link-icon img {
+    filter: brightness(1);
+}
+
+/* Profile Container Dropdown Styles */
+.profile-container {
+    display: inline-block;
+    position: relative;
+}
+
+.profile-container .dropdown-content {
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 -3px 2px 0 #000;
+    display: none;
+    margin-top: 5px;
+    padding: 5px;
+    position: absolute;
+    top: 100%;
+    width: fit-content;
+    min-width: 160px;
+    z-index: 10;
+}
+
+.profile-container.active .dropdown-content,
+.profile-container:hover .dropdown-content {
+    display: block;
+    background-color: #ffffff;
+}
+
+.profile-container:hover .link {
+    outline: 0;
+    width: 130px;
+}
+
+.profile-container:hover .link:before,
+.profile-container:hover .link .link-title {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Value Button Styles */
+.dropdown-content .value {
+    border: none;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    position: relative;
+    background-color: transparent;
+    border-radius: 4px;
+    width: 100%;
+    border-bottom: 1px solid #189dc5;
+    text-align: left;
+    align-items: center;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.dropdown-content .value:not(:active):hover,
+.dropdown-content .value:focus {
+    background-color: #189dc5;
+    width: 100%;
+    color: white;
+}
+
+.dropdown-content .value:active,
+.dropdown-content .value:focus {
+    background-color: #1a1f24a1;
+    outline: none;
+}
+
+.dropdown-content .value::before {
+    background-color: #2F81F7;
+    border-radius: 5px;
+    content: "";
+    height: 80%;
+    left: -10px;
+    opacity: 0;
+    position: absolute;
+    top: 5px;
+    width: 5px;
+    transition: opacity 0.2s;
+}
+
+.dropdown-content .value:active::before,
+.dropdown-content .value:focus::before {
+    opacity: 1;
+}
+
+.dropdown-content .value img {
+    width: 15px;
+    height: 15px;
+    margin-right: 8px;
+}
+
+/* Notifications footer with See All link */
+.notifications-footer {
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.view-all-link {
+  color: #189dc5;
+  text-decoration: none;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
 }

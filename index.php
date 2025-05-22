@@ -46,6 +46,9 @@ $statsSql = "SELECT
     (SELECT COUNT(*) FROM forum_threads) as total_threads";
 $statsResult = $conn->query($statsSql);
 $stats = $statsResult->fetch_assoc();
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
