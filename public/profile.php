@@ -702,13 +702,7 @@ $forumStmt->close();
                 html += '</div>';
             }
             
-            // If there are more notifications than we're showing, add a "view all" link
-            if (notifications.length > maxToShow) {
-                const baseUrl = window.location.pathname.includes('/public/') ? '.' : './public';
-                html += '<div class="notification-item show-all">';
-                html += `<a href="${baseUrl}/notifications.php">View all notifications</a>`;
-                html += '</div>';
-            }
+      
             
             list.innerHTML = html;
         }

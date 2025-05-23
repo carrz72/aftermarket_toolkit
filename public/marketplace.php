@@ -12,7 +12,8 @@ $notificationCounts = [
     'total' => 0,
     'messages' => 0,
     'friend_requests' => 0,
-    'forum_responses' => 0
+    'forum_responses' => 0,
+    'job_applications' => 0
 ];
 
 if (isset($_SESSION['user_id'])) {
@@ -737,9 +738,7 @@ function getConditionClass($condition) {
     
     // If there are more notifications than we're showing, add a "view all" link
     if (notifications.length > maxToShow) {
-      html += '<div class="notification-item show-all">';
-      html += '<a href="./notifications.php">View all notifications</a>';
-      html += '</div>';
+    
     }
       list.innerHTML = html;
     

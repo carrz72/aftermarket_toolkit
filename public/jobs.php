@@ -9,6 +9,47 @@ require_once __DIR__ . '/../includes/image_helper.php';
 // Set current section for menu highlighting
 $current_section = 'jobs';
 
+// Initialize notification counts
+$notificationCounts = [
+    'total' => 0,
+    'messages' => 0,
+    'friend_requests' => 0,
+    'forum_responses' => 0,
+    'job_applications' => 0
+];
+
+// Get notification counts if user is logged in
+if (isset($_SESSION['user_id'])) {
+    // Get unread notification count
+    $userId = $_SESSION['user_id'];
+    $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+    $unreadStmt = $conn->prepare($unreadQuery);
+    $unreadStmt->bind_param("i", $userId);
+    $unreadStmt->execute();
+    $unreadRow = $unreadStmt->get_result()->fetch_assoc();
+    $unreadCount = $unreadRow['count'];
+    
+    // Get counts by type
+    $countsByType = [];
+    $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
+    $typesStmt = $conn->prepare($typesQuery);
+    $typesStmt->bind_param("i", $userId);
+    $typesStmt->execute();
+    $typesResult = $typesStmt->get_result();
+    
+    while ($row = $typesResult->fetch_assoc()) {
+        $countsByType[$row['type']] = $row['count'];
+    }
+    
+    $notificationCounts = [
+        'total' => $unreadCount,
+        'messages' => $countsByType['message'] ?? 0,
+        'friend_requests' => $countsByType['friend_request'] ?? 0,
+        'forum_responses' => $countsByType['forum_response'] ?? 0,
+        'job_applications' => $countsByType['job_application'] ?? 0
+    ];
+}
+
 // Determine the action to take
 $action = $_GET['action'] ?? 'list';
 $job_id = isset($_GET['job_id']) ? filter_input(INPUT_GET, 'job_id', FILTER_VALIDATE_INT) : null;
@@ -57,21 +98,23 @@ if ($job_id) {
             $appStmt->bind_param("i", $job_id);
             $appStmt->execute();
             $applications = $appStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        } 
-        // Check if user has already applied to this job
+        }        // Check if user has already applied to this job (excluding withdrawn applications)
         else if (isset($_SESSION['user_id'])) {
             $checkAppStmt = $conn->prepare("
                 SELECT id, status FROM job_applications 
-                WHERE job_id = ? AND user_id = ?
+                WHERE job_id = ? AND user_id = ? AND status != 'withdrawn'
             ");
             $checkAppStmt->bind_param("ii", $job_id, $_SESSION['user_id']);
             $checkAppStmt->execute();
             $checkResult = $checkAppStmt->get_result();
             
             if ($checkResult->num_rows > 0) {
-                $user_has_applied = true;
                 $application = $checkResult->fetch_assoc();
+                $user_has_applied = true;
                 $application_status = $application['status'];
+            } else {
+                $user_has_applied = false;
+                $application_status = '';
             }
         }
     }
@@ -557,8 +600,7 @@ if (isset($_SESSION['user_id'])) {
                                                 <i class="fas fa-check-circle"></i> Mark Job Complete
                                             </button>
                                         </form>
-                                    <?php endif; ?>
-                                <?php elseif ($user_has_applied): ?>
+                                    <?php endif; ?>                                <?php elseif ($user_has_applied): ?>
                                     <div class="application-status">
                                         Your application status: <span class="status-badge <?= $application_status ?>"><?= ucfirst($application_status) ?></span>
                                     </div>
@@ -960,8 +1002,7 @@ if (isset($_SESSION['user_id'])) {
     
     list.innerHTML = html;
   }
-  
-  // Get the appropriate link for a notification
+    // Get the appropriate link for a notification
   function getNotificationLink(type, relatedId) {
     switch(type) {
       case 'friend_request':
@@ -972,6 +1013,10 @@ if (isset($_SESSION['user_id'])) {
         return relatedId ? `./forum.php?thread=${relatedId}` : './forum.php';
       case 'listing_comment':
         return relatedId ? `./marketplace.php?listing=${relatedId}` : './marketplace.php';
+      case 'job_application':
+        return relatedId ? `./jobs.php?job_id=${relatedId}` : './jobs.php?my=posted';
+      case 'application_withdrawn':
+        return relatedId ? `./jobs.php?job_id=${relatedId}` : './jobs.php?my=posted';
       default:
         return './notifications.php';
     }

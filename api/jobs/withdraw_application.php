@@ -59,11 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['application_id'])) {
         
         // Notify job poster that application was withdrawn
         $notification_content = "An application for your job '{$job['title']}' has been withdrawn.";
-        
-        // Add notification entry
+          // Add notification entry - Fixed to use the actual structure of the notifications table
         $notifyStmt = $conn->prepare("
-            INSERT INTO notifications (user_id, type, content, from_user_id, related_id, created_at) 
-            VALUES (?, 'application_withdrawn', ?, ?, ?, NOW())
+            INSERT INTO notifications (user_id, type, content, sender_id, related_id, is_read, created_at) 
+            VALUES (?, 'application_withdrawn', ?, ?, ?, 0, NOW())
         ");
         $notifyStmt->bind_param("isii", $job['user_id'], $notification_content, $user_id, $job_id);
         $notifyStmt->execute();

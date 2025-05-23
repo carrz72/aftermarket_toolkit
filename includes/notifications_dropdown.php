@@ -17,7 +17,7 @@ function renderNotificationDropdown($userId, $conn) {
     $counts = getNotificationCounts($userId, $conn);
     
     // Get user notifications (limited to 5)
-    $notifications = getNotifications($userId, $conn, 5);
+    $notifications = getNotifications($conn, $userId, 5);
     
     ob_start();
     ?>
@@ -63,9 +63,10 @@ function renderNotificationDropdown($userId, $conn) {
                         </div>
                     <?php endforeach; ?>
                     
-                    <?php if (count($notifications) < $counts['total']): ?>
-                        <div class="notification-item show-all">
-                            <a href="./public/notifications.php">View all notifications</a>
+                    
+                    <?php if (count($notifications) > 0): ?>
+                        <div class="view-all-notifications">
+                            <a href="notifications.php">View All Notifications</a>
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>

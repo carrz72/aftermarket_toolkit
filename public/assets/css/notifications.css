@@ -958,3 +958,28 @@ body {
 .view-all-link:hover {
   text-decoration: underline;
 }
+
+
+
+.notification-item.show-all {
+  text-align: center;
+  padding: 10px;
+}
+
+.notification-item.show-all a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.notification-item.show-all a:hover {
+  text-decoration: underline;
+}
+
+.no-notifications {
+  padding: 20px 15px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+/* ========================================================================
+   9. Miscellaneous Styles

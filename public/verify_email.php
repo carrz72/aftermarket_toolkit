@@ -1,109 +1,182 @@
+?php
 <?php
-// Email verification page
-session_start();
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/email_verification.php';
-
-// Initialize the email verification handler
-$emailVerification = new EmailVerification($conn);
-
-// Check if we have a token in the URL
-if (isset($_GET['token']) && !empty($_GET['token'])) {
-    $token = $_GET['token'];
+/**
+ * Email Verification Handler
+ * 
+ * Manages email verification tokens, sending verification emails,
+ * and verifying tokens.
+ */
+class EmailVerification {
+    private $conn;
     
-    // Verify the token
-    $result = $emailVerification->verifyEmailToken($token);
+    /**
+     * Constructor
+     * 
+     * @param mysqli $conn Database connection
+     */
+    public function __construct($conn) {
+        $this->conn = $conn;
+    }
     
-    if ($result['success']) {
-        $_SESSION['success_message'] = 'Your email has been verified successfully! You can now login.';
-        header('Location: login.php');
-        exit();
-    } else {
-        $_SESSION['error_message'] = $result['message'];
+    /**
+     * Generate a verification token for a user
+     * 
+     * @param int $userId The user ID
+     * @return string The generated token
+     */
+    public function generateToken($userId) {
+        // Generate a random token
+        $token = bin2hex(random_bytes(32));
+        
+        // Set expiration time (24 hours from now)
+        $expires = date('Y-m-d H:i:s', time() + 86400);
+        
+        // Delete any existing tokens for this user
+        $stmt = $this->conn->prepare("DELETE FROM email_verification_tokens WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        
+        // Insert the new token
+        $stmt = $this->conn->prepare("INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
+        $stmt->bind_param("iss", $userId, $token, $expires);
+        $stmt->execute();
+        
+        return $token;
+    }
+    
+    /**
+     * Verify a token and mark user's email as verified
+     * 
+     * @param string $token The verification token
+     * @return array Result with success status and message
+     */
+    public function verifyToken($token) {
+        // Sanitize input
+        $token = $this->conn->real_escape_string($token);
+        
+        // Check if token exists and is valid
+        $stmt = $this->conn->prepare("SELECT * FROM email_verification_tokens WHERE token = ? AND expires_at > NOW()");
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            return [
+                'success' => false,
+                'message' => 'Invalid or expired verification token. Please request a new verification email.'
+            ];
+        }
+        
+        // Get the user ID
+        $tokenData = $result->fetch_assoc();
+        $userId = $tokenData['user_id'];
+        
+        // Update user's email verification status
+        $updateStmt = $this->conn->prepare("UPDATE users SET email_verified = 1 WHERE id = ?");
+        $updateStmt->bind_param("i", $userId);
+        $success = $updateStmt->execute();
+        
+        if (!$success) {
+            return [
+                'success' => false,
+                'message' => 'Failed to verify email. Please try again or contact support.'
+            ];
+        }
+        
+        // Delete the used token
+        $deleteStmt = $this->conn->prepare("DELETE FROM email_verification_tokens WHERE token = ?");
+        $deleteStmt->bind_param("s", $token);
+        $deleteStmt->execute();
+        
+        return [
+            'success' => true,
+            'message' => 'Your email has been successfully verified!'
+        ];
+    }
+    
+    /**
+     * Send verification email to the user
+     * 
+     * @param int $userId The user ID
+     * @param string $email User's email address
+     * @param string $username User's username
+     * @return bool Whether the email was sent successfully
+     */
+    public function sendVerificationEmail($userId, $email, $username) {
+        // Generate a verification token
+        $token = $this->generateToken($userId);
+        
+        // Create the verification link
+        $verificationLink = "http://" . $_SERVER['HTTP_HOST'] . "/aftermarket_toolkit/public/verify_email.php?token=" . $token;
+        
+        // Email subject
+        $subject = "Verify Your Email - Aftermarket Toolbox";
+        
+        // Email body
+        $message = "
+        <html>
+        <head>
+            <title>Email Verification</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #189dc5; color: white; padding: 10px 20px; text-align: center; }
+                .content { padding: 20px; background-color: #f9f9f9; }
+                .button { display: inline-block; background-color: #189dc5; color: white; padding: 10px 20px; 
+                          text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                .footer { font-size: 12px; color: #777; text-align: center; margin-top: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>Email Verification</h1>
+                </div>
+                <div class='content'>
+                    <p>Hello $username,</p>
+                    <p>Thank you for registering with Aftermarket Toolbox! To complete your registration, please verify your email address by clicking the button below:</p>
+                    <p style='text-align: center;'>
+                        <a href='$verificationLink' class='button'>Verify Email Address</a>
+                    </p>
+                    <p>If the button doesn't work, you can copy and paste the following link into your browser:</p>
+                    <p>$verificationLink</p>
+                    <p>This link will expire in 24 hours.</p>
+                    <p>If you didn't create an account, you can safely ignore this email.</p>
+                </div>
+                <div class='footer'>
+                    <p>© " . date('Y') . " Aftermarket Toolbox. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+        
+        // Email headers
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= "From: Aftermarket Toolbox <noreply@aftermarkettoolbox.com>" . "\r\n";
+        
+        // Send the email
+        return mail($email, $subject, $message, $headers);
+    }
+    
+    /**
+     * Check if user's email is verified
+     * 
+     * @param int $userId The user ID
+     * @return bool Whether the email is verified
+     */
+    public function isEmailVerified($userId) {
+        $stmt = $this->conn->prepare("SELECT email_verified FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            return false;
+        }
+        
+        $userData = $result->fetch_assoc();
+        return (bool)$userData['email_verified'];
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Verification - Aftermarket Toolbox</title>
-    <link rel="stylesheet" href="./assets/css/index.css">
-    <style>
-        .verification-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        
-        .verification-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-            color: #189dc5;
-        }
-        
-        .error-icon {
-            color: #dc3545;
-        }
-        
-        .verification-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .verification-message {
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            color: #666;
-        }
-        
-        .verification-button {
-            display: inline-block;
-            background-color: #189dc5;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        
-        .verification-button:hover {
-            background-color: #157a9e;
-        }
-    </style>
-</head>
-<body>
-    <div class="menu">
-        <a href="../index.php" class="link">
-            <span class="link-icon">
-                <img src="./assets/images/home-icon.svg" alt="Home">
-            </span>
-            <span class="link-title">Home</span>
-        </a>
-    </div>
-    
-    <div class="verification-container">
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="verification-icon error-icon">❌</div>
-            <h1 class="verification-title">Verification Failed</h1>
-            <p class="verification-message"><?= htmlspecialchars($_SESSION['error_message']) ?></p>
-            <a href="login.php" class="verification-button">Go to Login</a>
-            <?php unset($_SESSION['error_message']); ?>
-        <?php else: ?>
-            <div class="verification-icon">✉️</div>
-            <h1 class="verification-title">Email Verification</h1>
-            <p class="verification-message">We are processing your verification. If you were not redirected automatically, your token may be invalid or expired.</p>
-            <p class="verification-message">Please check your email for a verification link, or request a new one from your profile page after logging in.</p>
-            <a href="login.php" class="verification-button">Go to Login</a>
-        <?php endif; ?>
-    </div>
-</body>
-</html>

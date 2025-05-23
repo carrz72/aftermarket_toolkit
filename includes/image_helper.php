@@ -369,4 +369,101 @@ function formatNotification($notification) {
             return htmlspecialchars($notification['content']);
     }
 }
+
+/**
+ * Get the URL for a listing image
+ *
+ * @param string|null $imageName The name of the image file, or null for default
+ * @return string The URL to the image
+ */
+function getListingImageUrl($imageName = null) {
+    // Base URL for image assets
+    $baseUrl = '/aftermarket_toolkit/public/assets/images/listings/';
+    
+    if (empty($imageName)) {
+        // Return default listing image if none specified
+        return $baseUrl . 'default-listing.jpg';
+    }
+    
+    // Check if file exists in listings directory
+    $imagePath = __DIR__ . '/../public/assets/images/listings/' . $imageName;
+    if (file_exists($imagePath)) {
+        return $baseUrl . $imageName;
+    }
+    
+    // Return default if file doesn't exist
+    return $baseUrl . 'default-listing.jpg';
+}
+
+/**
+ * Resize an image while maintaining aspect ratio
+ *
+ * @param string $sourcePath Path to the source image
+ * @param string $targetPath Path where the resized image will be saved
+ * @param int $maxWidth Maximum width of the resized image
+ * @param int $maxHeight Maximum height of the resized image
+ * @return bool True on success, false on failure
+ */
+function resizeImage($sourcePath, $targetPath, $maxWidth, $maxHeight) {
+    // Check if the GD extension is available
+    if (!extension_loaded('gd')) {
+        return false;
+    }
+    
+    // Get image information
+    list($origWidth, $origHeight, $type) = getimagesize($sourcePath);
+    
+    // Calculate new dimensions while maintaining aspect ratio
+    if ($maxWidth / $origWidth < $maxHeight / $origHeight) {
+        $newWidth = $maxWidth;
+        $newHeight = $origHeight * ($maxWidth / $origWidth);
+    } else {
+        $newWidth = $origWidth * ($maxHeight / $origHeight);
+        $newHeight = $maxHeight;
+    }
+    
+    // Create a new image
+    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+    
+    // Load the source image based on its type
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            $sourceImage = imagecreatefromjpeg($sourcePath);
+            break;
+        case IMAGETYPE_PNG:
+            $sourceImage = imagecreatefrompng($sourcePath);
+            // Preserve transparency
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            break;
+        case IMAGETYPE_GIF:
+            $sourceImage = imagecreatefromgif($sourcePath);
+            break;
+        default:
+            return false;
+    }
+    
+    // Resize the image
+    imagecopyresampled($newImage, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+    
+    // Save the resized image
+    $result = false;
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            $result = imagejpeg($newImage, $targetPath, 90); // 90% quality
+            break;
+        case IMAGETYPE_PNG:
+            $result = imagepng($newImage, $targetPath, 9); // Maximum compression
+            break;
+        case IMAGETYPE_GIF:
+            $result = imagegif($newImage, $targetPath);
+            break;
+    }
+    
+    // Free up memory
+    imagedestroy($sourceImage);
+    imagedestroy($newImage);
+    
+    return $result;
+}
 ?>

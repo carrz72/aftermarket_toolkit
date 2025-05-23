@@ -515,12 +515,7 @@ require_once __DIR__ . '/includes/navigation.php';
       html += `</div>`;
     }
     
-    // "View all" button if there are more notifications
-    if (notifications.length > maxToShow) {
-      html += `<div class="notification-item show-all">`;
-      html += `<a href="./public/notifications.php">View all notifications</a>`;
-      html += `</div>`;
-    }
+   
     
     list.innerHTML = html;
   }

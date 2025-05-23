@@ -33,7 +33,7 @@ $offset = 0;
 
 // Define current section for navigation highlighting
 $current_section = 'notifications';
-$userId = $_SESSION['user_id'];
+$userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0;
 $message = '';
 $searchResults = [];
 
@@ -214,9 +214,6 @@ $unreadCount = $unreadRow['count'];
         </div>        <div class="notifications-list">
           <!-- Notifications will be loaded here via JavaScript -->
           <div class="no-notifications">Loading notifications...</div>
-        </div>
-        <div class="notifications-footer">
-          <a href="public/notifications.php" class="view-all-link">See All Notifications</a>
         </div>
       </div>
     </div>

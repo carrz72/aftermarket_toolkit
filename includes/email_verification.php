@@ -47,6 +47,18 @@ class EmailVerification {
                 UNIQUE KEY (email)
             )
         ");
+
+        // Create email_verification_tokens table
+        $this->conn->query("
+            CREATE TABLE IF NOT EXISTS email_verification_tokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                token VARCHAR(255) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ");
     }
     
     /**
@@ -308,6 +320,157 @@ class EmailVerification {
         $markUsedStmt->execute();
         
         return ['success' => true, 'message' => 'Password reset successfully'];
+    }
+    
+    /**
+     * Generate a verification token for a user
+     * 
+     * @param int $userId User ID
+     * @return string The generated token
+     */
+    public function generateUserVerificationToken($userId) {
+        // Generate a unique token
+        $token = bin2hex(random_bytes(32));
+        $expires_at = date('Y-m-d H:i:s', strtotime('+' . $this->otp_expiry . ' minutes'));
+        
+        // Store the token in the database
+        $stmt = $this->conn->prepare("INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
+        $stmt->bind_param("iss", $userId, $token, $expires_at);
+        $stmt->execute();
+        
+        return $token;
+    }
+    
+    /**
+     * Send verification email to user
+     * 
+     * @param int $userId User ID
+     * @param string $email User's email
+     * @return bool Success or failure
+     */
+    public function sendUserVerificationEmail($userId, $email) {
+        // Generate a token
+        $token = $this->generateUserVerificationToken($userId);
+        
+        // Base URL for verification
+        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/aftermarket_toolkit";
+        $verificationUrl = "$baseUrl/public/verify_email.php?token=" . $token;
+        
+        // Email subject
+        $subject = "Verify your email address";
+        
+        // Email message
+        $message = "
+        <html>
+        <head>
+            <title>Verify Your Email</title>
+        </head>
+        <body>
+            <div style='max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;'>
+                <div style='background-color: #189dc5; padding: 15px; text-align: center;'>
+                    <h1 style='color: white; margin: 0;'>Aftermarket Toolkit</h1>
+                </div>
+                <div style='background-color: #f5f5f5; padding: 20px; border-radius: 0 0 5px 5px;'>
+                    <h2>Verify Your Email Address</h2>
+                    <p>Thank you for registering! Please click the button below to verify your email address:</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='$verificationUrl' style='background-color: #189dc5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Verify Email</a>
+                    </div>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style='word-break: break-all;'><a href='$verificationUrl'>$verificationUrl</a></p>
+                    <p>This link will expire in 24 hours.</p>
+                    <p>If you did not create an account, please ignore this email.</p>
+                </div>
+                <div style='text-align: center; margin-top: 20px; color: #666; font-size: 12px;'>
+                    <p>This is an automated message, please do not reply.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+        
+        // Headers for HTML email
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= 'From: Aftermarket Toolkit <noreply@aftermarkettoolkit.com>' . "\r\n";
+        
+        // Send the email
+        return mail($email, $subject, $message, $headers);
+    }
+    
+    /**
+     * Verify a token
+     * 
+     * @param string $token Token to verify
+     * @return array Result with success status and message
+     */
+    public function verifyUserToken($token) {
+        // Check if token exists in database
+        $stmt = $this->conn->prepare("SELECT user_id, expires_at FROM email_verification_tokens WHERE token = ?");
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            return [
+                'success' => false,
+                'message' => 'Invalid verification token.'
+            ];
+        }
+        
+        $tokenData = $result->fetch_assoc();
+        $userId = $tokenData['user_id'];
+        $expiresAt = $tokenData['expires_at'];
+        
+        // Check if token is expired
+        if (strtotime($expiresAt) < time()) {
+            return [
+                'success' => false,
+                'message' => 'Verification token has expired. Please request a new one.'
+            ];
+        }
+        
+        // Update user's email verification status
+        $updateStmt = $this->conn->prepare("UPDATE users SET email_verified = 1 WHERE id = ?");
+        $updateStmt->bind_param("i", $userId);
+        $updateResult = $updateStmt->execute();
+        
+        if (!$updateResult) {
+            return [
+                'success' => false,
+                'message' => 'Error updating verification status. Please try again.'
+            ];
+        }
+        
+        // Delete the used token
+        $deleteStmt = $this->conn->prepare("DELETE FROM email_verification_tokens WHERE token = ?");
+        $deleteStmt->bind_param("s", $token);
+        $deleteStmt->execute();
+        
+        return [
+            'success' => true,
+            'message' => 'Email verification successful!'
+        ];
+    }
+    
+    /**
+     * Check if a user's email is verified
+     * 
+     * @param int $userId User ID
+     * @return bool True if verified, false otherwise
+     */
+    public function isEmailVerified($userId) {
+        $stmt = $this->conn->prepare("SELECT email_verified FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            return false;
+        }
+        
+        $userData = $result->fetch_assoc();
+        return (bool)$userData['email_verified'];
     }
     
     /**

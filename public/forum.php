@@ -133,50 +133,6 @@ if ($thread_view && isset($_SESSION['user_id'])) {
     $markReadStmt->execute();
   }
 }
-
-// Mark forum notifications as read when user visits the forum page
-if (isset($_SESSION['user_id'])) {
-  $userId = $_SESSION['user_id'];
-  
-  // Mark forum_response notifications as read
-  $markForumNotificationsReadStmt = $conn->prepare("
-    UPDATE notifications 
-    SET is_read = 1 
-    WHERE user_id = ? AND type = 'forum_response' AND is_read = 0
-  ");
-  $markForumNotificationsReadStmt->bind_param("i", $userId);
-  $markForumNotificationsReadStmt->execute();
-  
-  // Update the notification counts after marking as read
-  if ($markForumNotificationsReadStmt->affected_rows > 0) {
-    // Recalculate notification counts
-    $unreadQuery = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
-    $unreadStmt = $conn->prepare($unreadQuery);
-    $unreadStmt->bind_param("i", $userId);
-    $unreadStmt->execute();
-    $unreadRow = $unreadStmt->get_result()->fetch_assoc();
-    $unreadCount = $unreadRow['count'];
-    
-    // Get counts by type
-    $countsByType = [];
-    $typesQuery = "SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 GROUP BY type";
-    $typesStmt = $conn->prepare($typesQuery);
-    $typesStmt->bind_param("i", $userId);
-    $typesStmt->execute();
-    $typesResult = $typesStmt->get_result();
-    
-    while ($row = $typesResult->fetch_assoc()) {
-        $countsByType[$row['type']] = $row['count'];
-    }
-    
-    $notificationCounts = [
-        'total' => $unreadCount,
-        'messages' => $countsByType['message'] ?? 0,
-        'friend_requests' => $countsByType['friend_request'] ?? 0,
-        'forum_responses' => 0 // Set to 0 since we just marked all forum notifications as read
-    ];
-  }
-}
 ?>
 
 <!DOCTYPE html>
@@ -219,15 +175,16 @@ if (isset($_SESSION['user_id'])) {
   <!-- Forum dropdown -->  <div class="profile-container">
     <a href="#" class="link active" onclick="toggleDropdown(this, event)">
       <span class="link-icon">
-        <img src="./assets/images/forum-icon.svg" alt="Forum">        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
+        <img src="./assets/images/forum-icon.svg" alt="Forum">
+        <?php if (isset($_SESSION['user_id']) && isset($notificationCounts['forum_responses']) && $notificationCounts['forum_responses'] > 0): ?>
           <span class="notification-badge forum"><?= $notificationCounts['forum_responses'] ?></span>
         <?php endif; ?>
       </span>
       <span class="link-title">Forum</span>
-    </a>    <div class="dropdown-content">
+    </a><div class="dropdown-content">
       <button class="value" onclick="window.location.href='./forum.php?view=threads';"><img src="./assets/images/view_threadicon.svg" alt="Forum">View Threads</button>
-      <button class="value" onclick="window.location.href='./create_forum.php?type=thread';"><img src="./assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
-      <button class="value" onclick="window.location.href='./create_forum.php?type=question';"><img src="./assets/images/start_threadicon.svg" alt="Post Question">Post Question</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=start_thread';"><img src="./assets/images/start_threadicon.svg" alt="Start Thread">Start Thread</button>
+      <button class="value" onclick="window.location.href='./forum.php?view=post_question';"><img src="./assets/images/start_threadicon.svg" alt="Post Question">Post Question</button>
     </div>
   </div>
 
@@ -263,7 +220,8 @@ if (isset($_SESSION['user_id'])) {
         <?php endif; ?>
       </span>
       <span class="link-title">Chat</span>
-    </a>    <div class="profile-container">    <a href="#" class="link <?= $current_section === 'jobs' ? 'active' : '' ?>" onclick="toggleDropdown(this, event)">
+    </a>    <div class="profile-container">
+    <a href="#" class="link <?= isset($current_section) && $current_section === 'jobs' ? 'active' : '' ?>" onclick="toggleDropdown(this, event)">
       <span class="link-icon">
         <img src="./assets/images/job-icon.svg" alt="Jobs">
       </span>
@@ -322,13 +280,13 @@ if (isset($_SESSION['user_id'])) {
             <?= htmlspecialchars($_SESSION['error']) ?>
             <?php unset($_SESSION['error']); ?>
           </div>
-        <?php endif; ?>        <!-- Thread creation form (only for logged-in users) -->
+        <?php endif; ?>
+
+        <!-- Thread creation form (only for logged-in users) -->
         <?php if (isset($_SESSION['user_id'])): ?>
             <div class="create-thread-section">
-                <button class="btn btn-post" onclick="window.location.href='./create_forum.php?type=thread';">Start Thread</button>
-                <button class="btn btn-post" onclick="window.location.href='./create_forum.php?type=question';">Post Question</button>
-            </div>
-        <?php else: ?>
+            <a href="create_forum.php" class="btn btn-post">Post a Thread</a>
+            </div>        <?php else: ?>
           <p class="login-in">Please <a href="login.php">log in</a> to post a thread.</p>
         <?php endif; ?>
  
@@ -679,12 +637,7 @@ if (isset($_SESSION['user_id'])) {
       html += `<a href="${notification.link || './notifications.php'}" class="notification-link"></a>`;
       html += '</div>';
     }
-      // If there are more notifications than we're showing, add a "view all" link
-    if (notifications.length > maxToShow) {
-      html += '<div class="notification-item show-all">';
-      html += '<a href="./notifications.php">View all notifications</a>';
-      html += '</div>';
-    }
+  
     
     list.innerHTML = html;
     

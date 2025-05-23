@@ -26,10 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     if (!$job_id) $errors[] = "Invalid job selected";
     if (empty($cover_letter)) $errors[] = "Cover letter is required";
-    
-    // Check if user has already applied to this job
+      // Check if user has already applied to this job (and application isn't withdrawn)
     if (empty($errors)) {
-        $checkStmt = $conn->prepare("SELECT id FROM job_applications WHERE job_id = ? AND user_id = ?");
+        $checkStmt = $conn->prepare("SELECT id FROM job_applications WHERE job_id = ? AND user_id = ? AND status != 'withdrawn'");
         $checkStmt->bind_param("ii", $job_id, $user_id);
         $checkStmt->execute();
         $checkResult = $checkStmt->get_result();
