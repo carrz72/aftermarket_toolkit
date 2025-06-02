@@ -3,7 +3,7 @@
         'name' => 'aftermarket/toolkit',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '73505357e3a88be0f60362539f795920007b6a9c',
+        'reference' => '0a7b13f790d168fdcf994e85a861158b8d77375f',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'aftermarket/toolkit' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '73505357e3a88be0f60362539f795920007b6a9c',
+            'reference' => '0a7b13f790d168fdcf994e85a861158b8d77375f',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -54,6 +54,15 @@
             'install_path' => __DIR__ . '/../phar-io/version',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'phpmailer/phpmailer' => array(
+            'pretty_version' => 'v6.10.0',
+            'version' => '6.10.0.0',
+            'reference' => 'bf74d75a1fde6beaa34a0ddae2ec5fce0f72a144',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpmailer/phpmailer',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'phpunit/php-code-coverage' => array(
             'pretty_version' => '11.0.9',
