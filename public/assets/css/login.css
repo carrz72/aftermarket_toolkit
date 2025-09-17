@@ -1,105 +1,136 @@
 /* Base styles for login page */
 body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    background-image: url("../images/marketplace_bg5.jpg");
-    background-position: center;
-    background-size: cover;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  background-image: url("../images/marketplace_bg5.jpg");
+  background-position: center;
+  background-size: cover;
 }
 
 /* Centering the login container */
 .login-container {
-    width: 320px;
-    height: fit-content;
-    margin: 5% auto;
-    padding: 40px;
-    background: #ffffffd2;
-    border: 1px solid #dddddd;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+  width: 320px;
+  height: fit-content;
+  margin: 5% auto;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dddddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
 .inputs {
- gap: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: start;
-    margin-top: 1rem;
-    margin-bottom: 1rem;    
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #007bff;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 5px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 5px;
 }
 
-input :focus {
-    border-color: #0056b3;
-    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
 }
 
 /* Login form header */
 .login-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #007bff;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007bff;
+}
+
+/* Error message styling */
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Success message styling */
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 /* Form group styling */
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #007bff;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #007bff;
 }
 
-
 .form-group input:focus {
-    border-color: #0056b3;
-    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+  border-color: #0056b3;
+  box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
 }
 
 p {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 14px;
-    color: #555555;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555555;
 }
 
-P a {
-    color: #007bff;
-    text-decoration: none;
+p a {
+  color: #007bff;
+  text-decoration: none;
 }
 
 /* Submit button styling */
 button {
-    width: 100%;
-    padding: 12px;
-    margin-left: 10px;
-    background-color: #007bff;
-    border: none;
-    border-radius: 4px;
-    color: #ffffff;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 10px;
+  margin: 1rem;
 }
 
 button:hover {
-    background-color: #0056b3;
-    transform: translateX(0.5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
+  background-color: #0056b3;
+  transform: translateX(0.5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
 }
 
+/* Secondary button styling */
+.secondary-btn {
+  background-color: #6c757d !important;
+  color: white !important;
+}
+
+.secondary-btn:hover {
+  background-color: #545b62 !important;
+}
